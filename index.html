@@ -3876,7 +3876,8 @@
       ["persona", "ego", "shadow", "anima"].forEach((key, i) => {
         const o = makeObj({ type: "guide", x: 0, z: 0, width: 1, height: 1, anchor: "bottom", html: "" });
         o.el.classList.add("guide-inner"); o.el.dataset.key = key;
-        o.key = key; o.appearAt = 380 + i * 170;
+        // the four guides take shape one by one as you walk the long way to the light
+        o.key = key; o.appearAt = Math.round(world.GUIDE_U * K3 * (0.25 + i * 0.13));
         objects.push(o);
       });
     }
@@ -4028,12 +4029,12 @@
     { id: "unsure", text: "사실 잘 모르겠어. 발이 먼저 갔어", frag: w => `고르지 못한 채로도 ${w}을 걸어온 나`,
       lines: ["괜찮아. 이유를 몰라도, 넌 여기까지 네 발로 걸어왔어.", "그것도 분명히 네가 한 선택이야."] }
   ];
-  function forkChoice(question, opts, onPick){
+  function forkChoice(question, opts, onPick, name){
     overlay.classList.add("chat");
     card.onclick = null;
     card.innerHTML = `
       <div class="dialogue-body" data-chat>
-        <div class="dialogue-top"><div class="badge">${scene.layer.npcName}</div></div>
+        <div class="dialogue-top"><div class="badge">${name || scene.layer.npcName}</div></div>
         <p class="question" aria-live="polite"></p>
         <div class="options" role="group" aria-label="선택지"></div>
       </div>`;
@@ -4476,6 +4477,75 @@
     renderMap();
   }
 
+
+  /* ---------------- talking with the Self ----------------
+     Before the ending: the Self speaks. It looks back over the whole journey with three questions,
+     answers with a message shaped by them, and tells you what the walk was: every guide you met
+     was you, and so is it. Then the ending (rings, closing lines, the boat) plays as before. */
+  const SELF_NAME = "자기(Self)";
+  const SELF_Q1 = [
+    { id: "persona", text: "가면을 마주했을 때", line: "가면을 들여다본 순간이 남았구나. 그 가면도 너를 지키려고 애써 온 너의 한 얼굴이었어." },
+    { id: "ego", text: "내 감정과 선택을 들여다볼 때", line: "네 마음과 선택을 들여다본 순간이 남았구나. 스스로를 바라볼 줄 안다는 건, 이미 큰 힘이야." },
+    { id: "shadow", text: "그림자를 돌아봤을 때", line: "그림자를 돌아본 순간이 남았구나. 넌 오늘 가장 어려운 일을 해낸 거야. 외면하던 나를 마주했으니까." },
+    { id: "anima", text: "내 안의 또 다른 나를 만났을 때", line: "내 안의 또 다른 나를 만난 순간이 남았구나. 네가 끌리던 그 모습은, 이제 네 안에서 자라날 거야." },
+    { id: "all", text: "하나만 고르긴 어려워, 전부 조금씩", line: "전부 조금씩 남았구나. 그만큼 너는 어느 한 조각도 버리지 않고 걸어왔다는 뜻이야." }
+  ];
+  const SELF_Q2 = [
+    { id: "light", text: "조금 가벼워졌어", line: "가벼워졌다니 다행이야. 짐을 내려놓은 게 아니라, 그 짐이 무엇인지 알게 된 거야." },
+    { id: "complex", text: "아직 복잡해", line: "복잡한 게 당연해. 마음은 원래 여러 겹이니까. 복잡하다는 건, 그만큼 깊이 들여다봤다는 거야." },
+    { id: "know", text: "나를 조금 더 알게 된 것 같아", line: "조금 더 알게 됐다면, 그걸로 충분해. 나를 아는 일은 평생 천천히 이어지는 거니까." },
+    { id: "warm", text: "따뜻해졌어", line: "따뜻해졌구나. 그 온기는 밖에서 온 게 아니라, 원래 네 안에 있던 거야." },
+    { id: "unsure", text: "잘 모르겠어", line: "잘 모르겠어도 괜찮아. 모르는 채로 여기까지 걸어온 것도, 너다운 한 걸음이었어." }
+  ];
+  const SELF_Q3 = [
+    { id: "tried", text: "그동안 정말 애썼어" },
+    { id: "asis", text: "있는 그대로도 괜찮아" },
+    { id: "nohide", text: "이제 숨기지 않아도 돼" },
+    { id: "slow", text: "천천히 가도 괜찮아" },
+    { id: "loved", text: "넌 사랑받을 만한 사람이야" }
+  ];
+  function selfSay(lines, onDone){ speakLines(Object.assign({}, scene.layer, { npcName: SELF_NAME }), lines, onDone, "계속"); }
+  function startSelfTalk(){
+    if (!scene || scene.selfTalked) return;
+    scene.selfTalked = true;
+    scene.selfTalking = true;
+    releaseKeys();
+    talkPrompt.classList.remove("show");
+    const pick = {};
+    selfSay(["드디어 왔구나. 기다리고 있었어.", "난 너의 '자기(Self)'야. 네 마음의 한가운데이면서, 네 마음 전체이기도 해.",
+             "가면의 숲, 노을 숲, 비 내린 숲, 달빛 숲… 먼 길을 걸어왔네. 잠깐, 같이 돌아볼까?"], () => {
+      forkChoice("이 여정에서 가장 오래 마음에 남은 순간은 언제야?", SELF_Q1, a => {
+        pick.q1 = a;
+        selfSay([a.line], () => {
+          forkChoice("여정을 마친 지금, 네 마음은 어때?", SELF_Q2, b => {
+            pick.q2 = b;
+            selfSay([b.line], () => {
+              forkChoice("마지막으로, 지금의 너에게 해 주고 싶은 말이 있다면?", SELF_Q3, c => {
+                pick.q3 = c;
+                state.selfTalk = { moment: a.id, feeling: b.id, words: c.text };
+                save();
+                Sound.chime();
+                selfSay([
+                  `'${c.text}.' 그 말, 내가 너에게 한 번 더 해 줄게.`,
+                  `${c.text}.`,
+                  "그리고, 하나 알려 줄게.",
+                  "가면의 안내자도, 자아의 관찰자도, 네 뒤를 따라오던 그림자도, 달빛 아래의 아니마·아니무스도…",
+                  "모두 너였어. 네 마음이 여러 얼굴로, 너에게 말을 걸어온 거야.",
+                  "그리고 지금 너와 이야기하는 나도, 너야.",
+                  "넌 무언가를 더 채워야 온전해지는 게 아니야. 지금 그대로, 이미 온전해."
+                ], () => {
+                  closeOverlay();
+                  scene.selfTalking = false;
+                  setTimeout(() => startSelfEnding(), 400);
+                });
+              }, SELF_NAME);
+            });
+          }, SELF_NAME);
+        });
+      }, SELF_NAME);
+    });
+    openOverlay("dialogue");
+  }
 
   /* ---------------- the Self ending ----------------
      No questions — just something to watch. You come to rest before the light; the four guides around it each send their token flying in to circle
@@ -5440,6 +5510,8 @@
     if (!scene || !overlay.classList.contains("dialogue-mode")) return;
     if (scene.fork && scene.fork.stage === "ask"){ scene.fork.stage = null; finishDialogue(scene.layer); return; }
     if (scene.fork && scene.fork.stage === "why"){ forkClose(); return; }
+    // stepping out of the Self's talk goes straight on to the ending (there is no one to walk back to)
+    if (scene.selfTalking){ closeOverlay(); scene.selfTalking = false; setTimeout(() => startSelfEnding(), 300); return; }
     resetLayerAnswers(scene.layer.key);
     save();
     closeOverlay();
@@ -5646,7 +5718,7 @@
         }
       }
     } else {
-      if (scene.traveled >= (scene.selfEnd != null ? scene.selfEnd : SELF_Z - SELF_STOP) - 2) startSelfEnding();
+      if (scene.traveled >= (scene.selfEnd != null ? scene.selfEnd : SELF_Z - SELF_STOP) - 2){ if (USE3D && !scene.selfTalked) startSelfTalk(); else if (!scene.selfTalking) startSelfEnding(); }
     }
   }
 
