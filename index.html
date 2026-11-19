@@ -3886,8 +3886,10 @@
       traveled: world.S.u * K3, speed: 0, bobPhase: 0, bobAmp: 0, lookAngle: 0,
       doorZ: null, doorTriggered: false,
       answered: false, ended: false, lastHintAt: 0, branchId: null,
-      selfEnd: isSelf ? (world.GUIDE_U - 3.2) * K3 : null
+      selfEnd: isSelf ? (world.GUIDE_U - 3.2) * K3 : null,
+      backTurned: layer.key === "persona"
     };
+    if (scene.backTurned) world.setBackTurned(true);
   }
   function syncAnchors3D(){
     const W = Forest3D.world;
@@ -5292,12 +5294,23 @@
     if (o && o.type === "behind") return o.faced ? o.gap : 99999;
     return scene.npcZ - scene.traveled;
   }
+  // the persona guide stands with its back to you until you call out to it
+  function callGuide(){
+    scene.backTurned = false;
+    scene.calling = true;
+    Forest3D.world.setBackTurned(false);
+    Sound.blip();
+    showEdgeHint("“저기요…!” 부르는 소리에, 안내자가 천천히 뒤를 돌아봐요", 2600);
+    const sc = scene;
+    setTimeout(() => { if (scene === sc){ sc.calling = false; if (!anyOverlayOpen() && !sc.answered) openDialogue(); } }, prefersReducedMotion() ? 300 : 1700);
+  }
   function tryTalk(){
     // the dialogue overlay being open must block this too — otherwise Space mid-conversation
     // restarted the questions from 1 while the answers already given stayed recorded
-    if (!scene || scene.isSelf || scene.answered || anyOverlayOpen()) return;
+    if (!scene || scene.isSelf || scene.answered || scene.calling || anyOverlayOpen()) return;
     const distToNpc = npcGap();
-    if (distToNpc < TALK_DIST) openDialogue();
+    if (distToNpc < TALK_DIST && scene.backTurned) callGuide();
+    else if (distToNpc < TALK_DIST) openDialogue();
     else showEdgeHint(`조금 더 다가가면 ${scene.layer.npcName}와 이야기할 수 있어요`);
   }
 
@@ -5506,8 +5519,13 @@
       const npcObj = scene.npcObj;
       const show = distToNpc < TALK_DIST && distToNpc > -80 && !scene.answered;
       talkPrompt.classList.toggle("show", show);
+      if (show){
+        const want = scene.backTurned ? (IS_TOUCH ? "💬 버튼을 눌러 불러 보기" : "💬 SPACE로 불러 보기") : (IS_TOUCH ? "💬 버튼을 눌러 대화하기" : "💬 SPACE로 대화하기");
+        if (talkPrompt.textContent !== want) talkPrompt.textContent = want;
+      }
       if (show && !scene.greeted && npcObj){
         scene.greeted = true;
+        if (scene.backTurned) showEdgeHint("누군가 등을 돌린 채 서 있어요. 불러 볼까요?", 3200);
         npcObj.el.classList.add("greet");
         setTimeout(() => npcObj.el.classList.remove("greet"), 1800);
       }
