@@ -2645,8 +2645,9 @@
         <h2 tabindex="-1">조각들이 한자리에</h2>
         <ul class="syn-frags">
           ${trayLayers.map(l => {
-            const sum = layerSummary(l.key);
+            let sum = layerSummary(l.key);
             if (!sum) return "";
+            if (l.key === "ego" && state.fork && state.fork.frag) sum += ` · ${state.fork.frag}`;
             const color = state.items && state.items[l.key];
             const icon = l.key === "persona" && state.mask ? customMaskSVG(state.mask) : color ? layerTokenMarkup(l.key, color) : "";
             return `<li><span class="syn-token">${icon}</span>
@@ -3935,13 +3936,106 @@
       o.gap = r.guideDist * K3;
     }
   }
+  /* the ego's fork: three ways, you walk into one, and the observer asks what you chose by.
+     Jung's four functions (thinking, feeling, sensation, intuition) plus "I can't choose". */
+  const FORK_VOICE = "자아의 관찰자 · 멀리서";
+  const FORK_WAYS = { "-1": "등불 길", "0": "안개 길", "1": "꽃길" };
+  const FORK_ENTER = {
+    "-1": "등불이 길을 또렷하게 밝혀 주고 있어요",
+    "0": "안개 속이라 앞이 잘 보이지 않아요. 그래도 길은 이어져 있어요",
+    "1": "발밑 가득 꽃이 피어 있어요"
+  };
+  const FORK_WHY = [
+    { id: "think", text: "표지판을 읽고, 더 맞는 길이라고 생각했어", frag: w => `이유를 따져 보고 ${w}을 고른 나`,
+      lines: ["넌 이유를 찾고, 따져 본 다음에 움직이는구나.", "융은 이걸 '사고'라고 불렀어. 생각으로 길을 밝히는 힘이야."] },
+    { id: "feel", text: "그쪽에 마음이 더 끌렸어", frag: w => `마음이 끄는 대로 ${w}을 고른 나`,
+      lines: ["넌 마음이 가리키는 쪽을 믿는구나.", "융은 이걸 '감정'이라고 불렀어. 무엇이 나에게 소중한지 알아보는 힘이야."] },
+    { id: "sense", text: "눈앞에 또렷이 보이는 쪽이 좋았어", frag: w => `눈앞에 또렷이 보이는 ${w}을 고른 나`,
+      lines: ["넌 지금 눈앞에 있는 것을 믿는구나.", "융은 이걸 '감각'이라고 불렀어. 지금, 여기를 또렷이 느끼는 힘이야."] },
+    { id: "intuit", text: "왠지 그쪽이라는 느낌이 왔어", frag: w => `느낌을 따라 ${w}을 고른 나`,
+      lines: ["넌 아직 보이지 않는 걸 먼저 느끼는구나.", "융은 이걸 '직관'이라고 불렀어. 저 너머의 가능성을 알아보는 힘이야."] },
+    { id: "unsure", text: "사실 잘 모르겠어. 발이 먼저 갔어", frag: w => `고르지 못한 채로도 ${w}을 걸어온 나`,
+      lines: ["괜찮아. 이유를 몰라도, 넌 여기까지 네 발로 걸어왔어.", "그것도 분명히 네가 한 선택이야."] }
+  ];
+  function forkChoice(question, opts, onPick){
+    overlay.classList.add("chat");
+    card.onclick = null;
+    card.innerHTML = `
+      <div class="dialogue-body" data-chat>
+        <div class="dialogue-top"><div class="badge">${FORK_VOICE}</div></div>
+        <p class="question" aria-live="polite"></p>
+        <div class="options" role="group" aria-label="선택지"></div>
+      </div>`;
+    const qEl = card.querySelector(".question"), optsEl = card.querySelector(".options");
+    opts.forEach(o => {
+      const b = document.createElement("button");
+      b.textContent = o.text;
+      b.onclick = e => { e.stopPropagation(); Sound.blip(); onPick(o); };
+      optsEl.appendChild(b);
+    });
+    const show = () => { optsEl.classList.add("shown"); const f = optsEl.querySelector("button"); if (f) f.focus({ preventScroll: true }); };
+    const finishNow = typeLine(qEl, question, show);
+    card.onclick = e => { if (!e.target.closest(".options")) finishNow(); };
+  }
+  function forkSay(lines, onDone){ speakLines(Object.assign({}, scene.layer, { npcName: FORK_VOICE }), lines, onDone, "계속"); }
+  function forkClose(){ if (scene && scene.fork) scene.fork.talking = false; closeOverlay(); }
+  function openForkAsk(){
+    const f = scene.fork; f.talking = true;
+    forkSay(["여기서 길이 세 갈래로 나뉘어.", "등불이 켜진 길, 안개 낀 길, 꽃이 핀 길. 어느 쪽으로 갈래?"], () => {
+      forkChoice("네가 직접 걸어서 골라 봐.", [{ id: "walk", text: "직접 골라 볼게" }, { id: "unsure", text: "못 고르겠어" }], o => {
+        if (o.id === "walk"){
+          forkClose();
+          showEdgeHint(IS_TOUCH ? "◀ ▶ 버튼으로 방향을 돌려, 가고 싶은 길로 걸어 들어가 보세요" : "A/D로 방향을 돌려, 가고 싶은 길로 걸어 들어가 보세요", 4200);
+          return;
+        }
+        f.unsure = true;
+        forkSay(["괜찮아. 멈춰 서서 고민하는 것도, 네가 하고 있는 선택이야.", "발이 먼저 가는 쪽으로 걸어 봐. 어느 길이든, 결국 다시 만나게 돼 있어."], () => {
+          forkClose();
+          showEdgeHint("천천히 걸어 보세요. 어느 길로 가도 괜찮아요", 3400);
+        });
+      });
+    });
+    openOverlay("dialogue");
+  }
+  function saveFork(pick){
+    const w = FORK_WAYS[String(scene.fork.way)];
+    state.fork = { way: scene.fork.way, func: pick.id, frag: pick.frag(w) };
+    save();
+  }
+  function openForkWhy(){
+    const f = scene.fork, w = FORK_WAYS[String(f.way)];
+    const end = "어느 길로 왔든, 결국 이렇게 다시 만나. 저 앞에서 기다릴게.";
+    f.talking = true;
+    if (f.unsure){
+      const pick = FORK_WHY.find(o => o.id === "unsure");
+      saveFork(pick);
+      forkSay([`길이 다시 만났네. 넌 ${w}을 걸어왔구나.`, "봐, 고르지 못한 채로도 넌 여기까지 네 발로 걸어왔어.", end], forkClose);
+    } else {
+      forkSay(["길이 다시 만났네."], () => {
+        forkChoice(`${w}을 고른 건, 뭘 보고 정한 거야?`, FORK_WHY, pick => {
+          saveFork(pick);
+          Sound.chime();
+          forkSay([...pick.lines, end], forkClose);
+        });
+      });
+    }
+    openOverlay("dialogue");
+  }
+  function updateFork(r){
+    const F = Forest3D.world.FORK, u = scene.traveled / K3;
+    const f = scene.fork || (scene.fork = {});
+    // only when you walk up to it (admin mode can drop you in past it)
+    if (!f.asked){ if (u > F.u0 - 4.5 && u < F.u0 + 2) { f.asked = true; openForkAsk(); } return; }
+    if (f.way == null && u > F.u0 + F.len * 0.5){ f.way = r.forkWay || 0; showEdgeHint(FORK_ENTER[String(f.way)], 3400); }
+    if (f.way != null && !f.done && u > F.u0 + F.len + 1.2){ f.done = true; openForkWhy(); }
+  }
   function loop3D(now, dt){
     const W = Forest3D.world;
     if (!scene || !W) return;
     if (overlay.classList.contains("open") || infoOverlay.classList.contains("open") || (scene.ending && !scene.pierWalk)){
       if (talkPrompt.classList.contains("show")){ talkPrompt.classList.remove("show"); scene.talkReady = null; }
       Forest3D.frame(now, dt, { frozen: true, npcU: scene.npcZ != null ? scene.npcZ / K3 : null, hideGuide: false,
-        talk: overlay.classList.contains("open") && overlay.classList.contains("dialogue-mode") && !scene.isSelf });
+        talk: overlay.classList.contains("open") && overlay.classList.contains("dialogue-mode") && !scene.isSelf && !(scene.fork && scene.fork.talking) });
       syncAnchors3D();
       return;
     }
@@ -3962,6 +4056,7 @@
       onViewEnd(){ const b = document.getElementById("btnView"); b.classList.remove("near"); b.setAttribute("aria-pressed", "false"); }
     });
     scene.traveled = r.u * K3;
+    if (scene.layer.key === "ego" && W.FORK && !scene.answered) updateFork(r);
     scene.speed = r.speed > 0 ? r.speed * K3 / 1000 : (r.speed < 0 ? -0.01 : 0);
     if (Math.abs(r.speed) > 1 && now - (scene.lastStepAt || 0) > 430){
       scene.lastStepAt = now; Sound.step(r.surface);
@@ -5242,6 +5337,7 @@
   // nothing is duplicated).
   function pauseDialogue(){
     if (!scene || !overlay.classList.contains("dialogue-mode")) return;
+    if (scene.fork && scene.fork.talking){ forkClose(); return; }
     resetLayerAnswers(scene.layer.key);
     save();
     closeOverlay();
