@@ -1348,6 +1348,16 @@
     min-height: 32px; padding: 0 0.35rem;
   }
   .text-link:hover{ color: var(--text); }
+  /* a shout from somewhere behind you: a speech bubble whose tail points down, out of the picture */
+  .shout-bubble{ position: absolute; left: 50%; bottom: 25%; transform: translate(-50%, 12px) scale(0.6); opacity: 0; z-index: 30;
+    background: #fff8ec; color: #3a2350; font-family: "Jua", sans-serif; font-size: clamp(1.6rem, 4.6vw, 2.4rem);
+    padding: 0.5rem 1.4rem 0.6rem; border-radius: 26px; box-shadow: 0 8px 28px rgba(10,4,24,0.55); pointer-events: none;
+    transition: opacity 0.18s ease, transform 0.25s cubic-bezier(.3,1.6,.5,1); }
+  .shout-bubble::after{ content: ""; position: absolute; left: 50%; bottom: -16px; margin-left: -12px; border: 12px solid transparent; border-top: 18px solid #fff8ec; border-bottom: 0; }
+  .shout-bubble.show{ opacity: 1; transform: translate(-50%, 0) scale(1); }
+  .shout-bubble.shake{ animation: shoutShake 0.4s ease; }
+  @keyframes shoutShake{ 0%,100%{ margin-left: 0 } 25%{ margin-left: -6px } 75%{ margin-left: 6px } }
+  @media (prefers-reduced-motion: reduce){ .shout-bubble, .shout-bubble.shake{ transition: opacity 0.2s; animation: none; } }
   .toast{
     position: fixed; left: 50%; bottom: 24px; z-index: 20;
     transform: translate(-50%, 20px);
@@ -3919,12 +3929,33 @@
     return n ? `<p class="egg-note">🌿 숲에서 숨은 길 ${n}/4곳을 찾았어요${n === 4 ? " — 구석구석 걸어 주셨네요" : ""}</p>` : "";
   }
   // the shadow: it walks behind you, unseen. One extra set of footsteps, then "turn around"
+  function snakeStrike(o){
+    const sc = scene;
+    Forest3D.world.lunge();
+    Sound.blip();
+    const el = document.createElement("div");
+    el.className = "shout-bubble"; el.setAttribute("role", "status"); el.textContent = "조심해!";
+    sceneViewportEl.appendChild(el);
+    void el.offsetWidth; el.classList.add("show", "shake");
+    setTimeout(() => el.classList.remove("show"), 1500);
+    setTimeout(() => el.remove(), 1900);
+    setTimeout(() => {
+      if (scene !== sc || o.heard) return;
+      o.heard = true;
+      showEdgeHint("방금 그 목소리… 뒤에서 들려왔어요", 3200);
+    }, 1900);
+  }
   function updateBehind(o, r, now, dt){
     const GU = Forest3D.world.GUIDE_U, u = scene.traveled / K3;
-    if (!o.heard && u > GU * 0.42){ o.heard = true; showEdgeHint("뒤에서… 발소리가 하나 더 들리는 것 같아요", 3400); }
+    // the snake: it strikes, someone behind you shouts "조심해!", and that voice is the shadow's
+    const LU = Forest3D.world.LUNGE_U;
+    if (LU != null && !scene.lunged && u > LU - 1.6 && u < LU + 3){ scene.lunged = true; snakeStrike(o); }
+    if (!o.heard && !scene.lunged && u > GU * 0.42){ o.heard = true; showEdgeHint("뒤에서… 발소리가 하나 더 들리는 것 같아요", 3400); }
     if (o.heard && !o.faced){
       if (r.speed !== 0) o.still = 0; else if (!o.still) o.still = now;
-      if (!o.prompt && ((o.still && now - o.still > 1400) || u > GU * 0.6)){ o.prompt = true; o.lastPrompt = 0; }
+      // only once you have walked on a good way past the voice (not just for standing still)
+      const promptU = LU != null ? Math.max(GU * 0.6, LU + 12) : GU * 0.6;
+      if (!o.prompt && u > promptU){ o.prompt = true; o.lastPrompt = 0; }
       if (o.prompt && now - o.lastPrompt > 7000){
         o.lastPrompt = now;
         showEdgeHint(o.prompted ? "뒤를 돌아보세요" : "뒤를 돌아보세요 — A/D로 돌거나, 화면을 끌거나, 🙂 버튼을 눌러 보세요", 4400);
@@ -3942,9 +3973,20 @@
      Jung's four functions (thinking, feeling, sensation, intuition) plus "I can't choose". */
   const FORK_WAYS = { "-1": "등불 길", "0": "안개 길", "1": "꽃길" };
   const FORK_ENTER = {
-    "-1": "등불이 길을 또렷하게 밝혀 주고 있어요",
-    "0": "안개 속이라 앞이 잘 보이지 않아요. 그래도 길은 이어져 있어요",
-    "1": "발밑 가득 꽃이 피어 있어요"
+    "-1": "가로등이 길 끝까지 환하게 비추고 있어요. 어디로 가는지 또렷이 보여요",
+    "0": "앞이 잘 보이지 않아요. 그런데 안개 속 어딘가에서 따뜻한 빛이 새어 나와요",
+    "1": "발밑 가득 꽃이 피어 있고, 나비가 앞서 날아가요"
+  };
+  // what each way stands for: the lit way = seeing clearly and knowing where you go (the ego's own
+  // light), the misty way = the not-yet-known, drawn on by a warm light inside it (the unconscious,
+  // curiosity), the flower way = beauty, rest, being kind to yourself; butterflies are psyche, the soul
+  const FORK_MEANING = {
+    "-1": ["등불 길은 '훤히 보이는 길'이야. 어디로 가는지, 무엇이 기다리는지 알 수 있는 길.",
+           "앞이 보여야 마음이 놓이는 너일 수도 있고, 지금은 무엇보다 확실함이 필요한 때일지도 몰라."],
+    "0": ["안개 길은 '아직 모르는 길'이야. 끝이 보이지 않지만, 그 안에 따뜻한 빛이 숨어 있었지.",
+          "모르는 것 앞에서도 한 걸음 들어설 수 있는 마음. 그건 궁금해하는 힘이고, 너를 믿는 힘이야."],
+    "1": ["꽃길은 '마음이 쉬어 가는 길'이야. 나비는 옛날부터 '영혼'을 뜻했대.",
+          "지금 너에게는 애쓰는 것보다, 예쁜 것 곁에 머물며 스스로를 아껴 주는 시간이 필요한지도 몰라."]
   };
   const FORK_WHY = [
     { id: "think", text: "표지판을 읽고, 더 맞는 길이라고 생각했어", frag: w => `이유를 따져 보고 ${w}을 고른 나`,
@@ -4008,13 +4050,13 @@
     f.stage = "why";
     if (f.unsure){
       saveFork(FORK_WHY.find(o => o.id === "unsure"));
-      forkSay([`먼저 와서 기다리고 있었어. 넌 ${w}을 걸어왔구나.`, "봐, 고르지 못한 채로도 넌 여기까지 네 발로 걸어왔어.", end], done);
+      forkSay([`먼저 와서 기다리고 있었어. 넌 ${w}을 걸어왔구나.`, "봐, 고르지 못한 채로도 넌 여기까지 네 발로 걸어왔어.", ...FORK_MEANING[String(f.way)], end], done);
     } else {
       forkSay([`먼저 와서 기다리고 있었어. ${w} 끝까지 왔구나.`], () => {
         forkChoice(`${w}을 고른 건, 뭘 보고 정한 거야?`, FORK_WHY, pick => {
           saveFork(pick);
           Sound.chime();
-          forkSay([...pick.lines, end], done);
+          forkSay([...pick.lines, ...FORK_MEANING[String(f.way)], end], done);
         });
       });
     }
@@ -5315,10 +5357,9 @@
     scene.backTurned = false;
     scene.calling = true;
     Forest3D.world.setBackTurned(false);
-    Sound.blip();
-    showEdgeHint("“저기요…!” 부르는 소리에, 안내자가 천천히 뒤를 돌아봐요", 2600);
-    const sc = scene;
-    setTimeout(() => { if (scene === sc){ sc.calling = false; if (!anyOverlayOpen() && !sc.answered) openDialogue(); } }, prefersReducedMotion() ? 300 : 1700);
+    // one press does both: the guide turns round while the conversation opens
+    scene.calling = false;
+    openDialogue();
   }
   function tryTalk(){
     // the dialogue overlay being open must block this too — otherwise Space mid-conversation
