@@ -3940,7 +3940,6 @@
   }
   /* the ego's fork: three ways, you walk into one, and the observer asks what you chose by.
      Jung's four functions (thinking, feeling, sensation, intuition) plus "I can't choose". */
-  const FORK_VOICE = "자아의 관찰자 · 멀리서";
   const FORK_WAYS = { "-1": "등불 길", "0": "안개 길", "1": "꽃길" };
   const FORK_ENTER = {
     "-1": "등불이 길을 또렷하게 밝혀 주고 있어요",
@@ -3964,7 +3963,7 @@
     card.onclick = null;
     card.innerHTML = `
       <div class="dialogue-body" data-chat>
-        <div class="dialogue-top"><div class="badge">${FORK_VOICE}</div></div>
+        <div class="dialogue-top"><div class="badge">${scene.layer.npcName}</div></div>
         <p class="question" aria-live="polite"></p>
         <div class="options" role="group" aria-label="선택지"></div>
       </div>`;
@@ -3979,25 +3978,23 @@
     const finishNow = typeLine(qEl, question, show);
     card.onclick = e => { if (!e.target.closest(".options")) finishNow(); };
   }
-  function forkSay(lines, onDone){ speakLines(Object.assign({}, scene.layer, { npcName: FORK_VOICE }), lines, onDone, "계속"); }
-  function forkClose(){ if (scene && scene.fork) scene.fork.talking = false; closeOverlay(); }
-  function openForkAsk(){
-    const f = scene.fork; f.talking = true;
-    forkSay(["여기서 길이 세 갈래로 나뉘어.", "등불이 켜진 길, 안개 낀 길, 꽃이 핀 길. 어느 쪽으로 갈래?"], () => {
-      forkChoice("네가 직접 걸어서 골라 봐.", [{ id: "walk", text: "직접 골라 볼게" }, { id: "unsure", text: "못 고르겠어" }], o => {
+  function forkSay(lines, onDone){ speakLines(scene.layer, lines, onDone, "계속"); }
+  function forkClose(){ if (scene && scene.fork) scene.fork.stage = null; closeOverlay(); }
+  // right after the ego conversation, still face to face: the way ahead splits in three
+  function openForkAsk(layer){
+    const f = scene.fork = { asked: true, stage: "ask" };
+    const go = hint => { f.stage = null; finishDialogue(layer); setTimeout(() => showEdgeHint(hint, 4200), 600); };
+    forkSay(["저 앞에서 길이 세 갈래로 나뉘어.", "등불 길, 안개 길, 꽃길. 어디로 가든, 그건 모두 너의 선택이야."], () => {
+      forkChoice("어느 길로 갈지, 네 발로 직접 골라 봐.", [{ id: "walk", text: "직접 골라 볼게" }, { id: "unsure", text: "못 고르겠어" }], o => {
         if (o.id === "walk"){
-          forkClose();
-          showEdgeHint(IS_TOUCH ? "◀ ▶ 버튼으로 방향을 돌려, 가고 싶은 길로 걸어 들어가 보세요" : "A/D로 방향을 돌려, 가고 싶은 길로 걸어 들어가 보세요", 4200);
+          go(IS_TOUCH ? "◀ ▶ 버튼으로 방향을 돌려, 가고 싶은 길로 걸어 들어가 보세요" : "A/D로 방향을 돌려, 가고 싶은 길로 걸어 들어가 보세요");
           return;
         }
         f.unsure = true;
-        forkSay(["괜찮아. 멈춰 서서 고민하는 것도, 네가 하고 있는 선택이야.", "발이 먼저 가는 쪽으로 걸어 봐. 어느 길이든, 결국 다시 만나게 돼 있어."], () => {
-          forkClose();
-          showEdgeHint("천천히 걸어 보세요. 어느 길로 가도 괜찮아요", 3400);
-        });
+        forkSay(["괜찮아. 멈춰 서서 고민하는 것도, 네가 하고 있는 선택이야.", "발이 먼저 가는 쪽으로 걸어 봐. 어느 길이든, 네가 걸으면 네 길이 돼."],
+          () => go("천천히 걸어 보세요. 어느 길로 가도 괜찮아요"));
       });
     });
-    openOverlay("dialogue");
   }
   function saveFork(pick){
     const w = FORK_WAYS[String(scene.fork.way)];
@@ -4006,30 +4003,45 @@
   }
   function openForkWhy(){
     const f = scene.fork, w = FORK_WAYS[String(f.way)];
-    const end = "어느 길로 왔든, 결국 이렇게 다시 만나. 저 앞에서 기다릴게.";
-    f.talking = true;
+    const end = "다른 길을 골랐다면, 지금쯤 다른 곳에 서 있겠지. 여기는 네가 고른 길의 끝이야. 이제 문으로 가 봐.";
+    const done = () => { forkClose(); showForkDoor(); showEdgeHint("당신이 고른 길 끝에 문이 열렸어요 — 걸어 들어가 보세요", 3400); };
+    f.stage = "why";
     if (f.unsure){
-      const pick = FORK_WHY.find(o => o.id === "unsure");
-      saveFork(pick);
-      forkSay([`길이 다시 만났네. 넌 ${w}을 걸어왔구나.`, "봐, 고르지 못한 채로도 넌 여기까지 네 발로 걸어왔어.", end], forkClose);
+      saveFork(FORK_WHY.find(o => o.id === "unsure"));
+      forkSay([`먼저 와서 기다리고 있었어. 넌 ${w}을 걸어왔구나.`, "봐, 고르지 못한 채로도 넌 여기까지 네 발로 걸어왔어.", end], done);
     } else {
-      forkSay(["길이 다시 만났네."], () => {
+      forkSay([`먼저 와서 기다리고 있었어. ${w} 끝까지 왔구나.`], () => {
         forkChoice(`${w}을 고른 건, 뭘 보고 정한 거야?`, FORK_WHY, pick => {
           saveFork(pick);
           Sound.chime();
-          forkSay([...pick.lines, end], forkClose);
+          forkSay([...pick.lines, end], done);
         });
       });
     }
     openOverlay("dialogue");
   }
+  // the door only appears at the end of the way you took
+  function showForkDoor(){
+    const F = Forest3D.world.FORK, doorZ = (F.u0 + F.len) * K3;
+    const doorColor = (state.items && state.items.ego) || MASK_PALETTE[0];
+    Forest3D.world.showDoor(doorZ / K3, doorColor, scene.fork.way);
+    const doorObj = makeObj({ type: "door", x: 0, z: doorZ, width: 100, height: 170, anchor: "bottom", html: doorMarkup(doorColor) });
+    doorObj.el.classList.add("door");
+    scene.objects.push(doorObj);
+    scene.doorZ = doorZ;
+    scene.dirty = true;
+    Sound.chime();
+  }
   function updateFork(r){
-    const F = Forest3D.world.FORK, u = scene.traveled / K3;
-    const f = scene.fork || (scene.fork = {});
-    // only when you walk up to it (admin mode can drop you in past it)
-    if (!f.asked){ if (u > F.u0 - 4.5 && u < F.u0 + 2) { f.asked = true; openForkAsk(); } return; }
-    if (f.way == null && u > F.u0 + F.len * 0.5){ f.way = r.forkWay || 0; showEdgeHint(FORK_ENTER[String(f.way)], 3400); }
-    if (f.way != null && !f.done && u > F.u0 + F.len + 1.2){ f.done = true; openForkWhy(); }
+    const F = Forest3D.world.FORK, u = scene.traveled / K3, f = scene.fork, end = F.u0 + F.len;
+    if (f.way == null && u > F.u0 + F.len * 0.35){
+      f.way = r.forkWay || 0;
+      showEdgeHint(FORK_ENTER[String(f.way)], 3400);
+      // the ways are apart now: the observer goes on ahead, to the end of the one you took
+      scene.npcZ = (end - 4) * K3;
+      Forest3D.world.setGuideWay(f.way);
+    }
+    if (f.way != null && !f.done && u > end - 8.5){ f.done = true; openForkWhy(); }
   }
   function loop3D(now, dt){
     const W = Forest3D.world;
@@ -4037,14 +4049,14 @@
     if (overlay.classList.contains("open") || infoOverlay.classList.contains("open") || (scene.ending && !scene.pierWalk)){
       if (talkPrompt.classList.contains("show")){ talkPrompt.classList.remove("show"); scene.talkReady = null; }
       Forest3D.frame(now, dt, { frozen: true, npcU: scene.npcZ != null ? scene.npcZ / K3 : null, hideGuide: false,
-        talk: overlay.classList.contains("open") && overlay.classList.contains("dialogue-mode") && !scene.isSelf && !(scene.fork && scene.fork.talking) });
+        talk: overlay.classList.contains("open") && overlay.classList.contains("dialogue-mode") && !scene.isSelf });
       syncAnchors3D();
       return;
     }
     const o = scene.obs, behind = !!(o && o.type === "behind");
     let cap;
     if (scene.isSelf) cap = scene.pierWalk ? W.PIER_END_U * K3 + 12 : scene.selfEnd + 24;
-    else if (scene.answered) cap = scene.doorZ + 120;
+    else if (scene.answered) cap = scene.doorZ != null ? scene.doorZ + 120 : (W.FORK ? (W.FORK.u0 + W.FORK.len - 1) * K3 : scene.traveled);
     else if (behind) cap = o.faced ? o.capU * K3 + 30 : W.GUIDE_U * 0.72 * K3;
     else cap = scene.npcZ - W.stopDist * K3;
     const blocked = obstacleBlocks();
@@ -4058,7 +4070,7 @@
       onViewEnd(){ const b = document.getElementById("btnView"); b.classList.remove("near"); b.setAttribute("aria-pressed", "false"); }
     });
     scene.traveled = r.u * K3;
-    if (scene.layer.key === "ego" && W.FORK && !scene.answered) updateFork(r);
+    if (scene.fork && scene.fork.asked && W.FORK) updateFork(r);
     scene.speed = r.speed > 0 ? r.speed * K3 / 1000 : (r.speed < 0 ? -0.01 : 0);
     if (Math.abs(r.speed) > 1 && now - (scene.lastStepAt || 0) > 430){
       scene.lastStepAt = now; Sound.step(r.surface);
@@ -4662,6 +4674,8 @@
       delete state.mask;
       save();
       speakLines(layer, [`네가 고른 건 ‘${r.name}’이구나.`, r.seen, r.intent, r.flex], () => finishDialogue(layer), "계속 걷기");
+    } else if (layer.key === "ego" && USE3D && Forest3D.world && Forest3D.world.FORK){
+      openForkAsk(layer);
     } else {
       finishDialogue(layer);
     }
@@ -4679,6 +4693,8 @@
       // ahead, and walking up to it is what actually carries you into the next layer
       const doorColor = (state.items && state.items[layer.key]) || MASK_PALETTE[0];
       const behindDoor = USE3D && scene.obs && scene.obs.type === "behind";
+      // at the ego's fork the door waits at the end of whichever way you take (showForkDoor)
+      if (USE3D && scene.fork && Forest3D.world.FORK){ Forest3D.world.S.answered = true; Sound.chime(); return; }
       const doorZ = behindDoor ? scene.traveled + 8 * K3 : scene.npcZ + (USE3D ? 9 * K3 : 260);
       if (USE3D){ Forest3D.world.showDoor(doorZ / K3, doorColor); if (behindDoor) Forest3D.world.faceAlongPath(); }
       const doorObj = makeObj({
@@ -5350,7 +5366,8 @@
   // nothing is duplicated).
   function pauseDialogue(){
     if (!scene || !overlay.classList.contains("dialogue-mode")) return;
-    if (scene.fork && scene.fork.talking){ forkClose(); return; }
+    if (scene.fork && scene.fork.stage === "ask"){ scene.fork.stage = null; finishDialogue(scene.layer); return; }
+    if (scene.fork && scene.fork.stage === "why"){ forkClose(); return; }
     resetLayerAnswers(scene.layer.key);
     save();
     closeOverlay();
