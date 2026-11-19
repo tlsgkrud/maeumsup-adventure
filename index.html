@@ -328,6 +328,78 @@
   body.scene3d .touch-controls{ position: absolute; left: 50%; bottom: max(14px, env(safe-area-inset-bottom)); transform: translateX(-50%); width: auto; margin: 0; gap: 0.5rem; padding: 0.5rem 0.8rem; border-radius: 999px; z-index: 9;
     background: rgba(23,21,34,0.5); border: 1px solid rgba(244,213,141,0.22); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
   body.scene3d .ctrl.ctrl-3d{ display: flex; flex-direction: column; align-items: center; }
+  /* the door: the next layer's light fills the screen, with its name */
+  #doorWash{ position: fixed; inset: 0; z-index: 8; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.8s ease; }
+  #doorWash.show{ opacity: 1; }
+  .dw-title{ text-align: center; font-family: "Jua", sans-serif; font-size: clamp(2rem, 7vw, 3.6rem); color: var(--dw-ink, #fff8e8); text-shadow: 0 2px 24px rgba(0,0,0,0.25);
+    transform: scale(0.94); transition: transform 1.6s ease; padding: 0 1rem; word-break: keep-all; }
+  #doorWash.show .dw-title{ transform: scale(1); }
+  .dw-title small{ display: block; font-family: "Gowun Dodum", sans-serif; font-size: clamp(0.95rem, 2.8vw, 1.15rem); margin-top: 0.6rem; opacity: 0.9; }
+  /* the boat at the end */
+  .self-ending.s-leave{ opacity: 0; transition: opacity 1.2s ease; }
+  .boat-end{ position: absolute; inset: 0; z-index: 9; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 1rem;
+    padding: 0 1rem 17vh; pointer-events: none; opacity: 0; transition: opacity 1.8s ease; }
+  .boat-end.show{ opacity: 1; }
+  .boat-line{ margin: 0; font-family: "Jua", sans-serif; font-size: clamp(1.4rem, 4.6vw, 2.3rem); color: #2a1d06; text-align: center; word-break: keep-all;
+    text-shadow: 0 0 14px rgba(255,250,235,0.95), 0 0 30px rgba(255,240,205,0.9); }
+  .boat-end .end-continue{ pointer-events: auto; opacity: 1; transform: none; }
+  .greet-hello{ margin-top: 0.2rem; }
+  .greet-line{ margin: 0.2rem 0 0.4rem; }
+  #greetGoBtn{ margin-top: 0.8rem; }
+  .egg-note{ color: var(--text-dim); font-size: 0.86rem; text-align: center; margin: 0.2rem 0 1rem; }
+  .onboard-sound{ display: flex; align-items: center; gap: 0.55rem; margin: 0 0 1rem; font-size: 0.92rem; cursor: pointer; }
+  .onboard-sound input{ width: 18px; height: 18px; accent-color: #d9b25c; }
+  .onboard-sound span{ color: var(--text-dim); font-size: 0.8rem; }
+  /* the conversation in 3D: a speech bubble at the bottom with the guide's name on a tag,
+     your answers floating above it like little replies */
+  body.scene3d .overlay.chat{ background: transparent; backdrop-filter: none; -webkit-backdrop-filter: none; align-items: flex-end;
+    padding: 0 0 max(1rem, env(safe-area-inset-bottom)); }
+  .overlay.chat .card{ max-width: 780px; width: calc(100% - 2rem); max-height: none; overflow: visible; border: none;
+    background: #fdf6e3; border-radius: 46px 52px 44px 50px / 44px 40px 48px 42px; box-shadow: 0 12px 34px rgba(40,25,5,0.32); }
+  .overlay.chat .card::before, .overlay.chat .card::after, .overlay.chat .npc-portrait{ display: none; }
+  .overlay.chat .card-scroll{ overflow: visible; padding: 1.8rem 2.2rem 2rem; display: block; min-height: 7.5rem; }
+  .overlay.chat .card-scroll > *{ animation: none; }
+  .overlay.chat .badge{ position: absolute; top: -0.95rem; left: 1.8rem; margin: 0; background: #e8a04a; color: #fff; border: none; letter-spacing: 0;
+    font-family: "Jua", sans-serif; font-size: 1rem; padding: 0.32rem 1.1rem; transform: rotate(-3deg); box-shadow: 0 3px 0 rgba(150,90,20,0.3); }
+  .overlay.chat .dialogue-tools{ position: absolute; top: 0.7rem; right: 1.3rem; }
+  .overlay.chat .dialogue-tools .info-btn, .overlay.chat .pause-btn{ color: #9a7a5a; border-color: rgba(150,110,60,0.35); background: rgba(150,110,60,0.06); }
+  .overlay.chat .question{ color: #6b4a2a; font-size: clamp(1.1rem, 2.7vw, 1.38rem); line-height: 1.6; margin: 0.35rem 0 0.2rem; min-height: 2.2em; }
+  .overlay.chat .desc, .overlay.chat .greet-line{ color: #7a5a3a; }
+  .overlay.chat .multi-note{ color: #a3825e; margin: 0.4rem 0 0; }
+  .overlay.chat .morph-note{ color: #c0702a; }
+  .chat-next{ position: absolute; left: 50%; bottom: 0.45rem; transform: translateX(-50%); background: none; border: none; color: #f0a23c; font-size: 1.05rem;
+    cursor: pointer; padding: 0.2rem 0.8rem; animation: chatBob 1.1s ease-in-out infinite; }
+  @keyframes chatBob{ 0%,100%{ transform: translate(-50%, 0); } 50%{ transform: translate(-50%, 4px); } }
+  .overlay.chat .card, .overlay.open.chat .card{ transform: none; }
+  body.scene3d:has(.overlay.open) .scene-hint{ display: none; }
+  .overlay.chat .options{ position: fixed; right: 1.6rem; bottom: 12.5rem; width: min(400px, calc(100vw - 2.4rem)); max-height: calc(100vh - 15rem);
+    max-height: calc(100dvh - 15rem); overflow-y: auto; padding: 0.3rem; gap: 0.45rem; opacity: 0; transform: translateY(8px); transition: opacity 0.4s ease, transform 0.4s ease; }
+  .overlay.chat .options.shown{ opacity: 1; transform: none; }
+  .overlay.chat .options button{ background: #fdf6e3; color: #5a3e22; border: none; border-radius: 999px; box-shadow: 0 4px 14px rgba(30,18,4,0.3); padding: 0.62rem 1.1rem 0.62rem 2rem; }
+  .overlay.chat .options button:hover{ background: #fff0cc; border: none; }
+  .overlay.chat .options button.selected{ background: #ffdca0; border: none; }
+  .overlay.chat .options button::before{ background: #e8a04a; }
+  .overlay.chat .options button.selected::after{ color: #c87a20; }
+  .overlay.chat .opt-pager{ background: rgba(253,246,227,0.94); border-radius: 999px; padding: 0 0.9rem; box-shadow: 0 4px 14px rgba(30,18,4,0.25); }
+  .overlay.chat .options .opt-pager button{ color: #7a5a3a; box-shadow: none; background: none; }
+  .overlay.chat .options .opt-pager .pg-next{ color: #d0802a; }
+  .overlay.chat .pg-num{ color: #8a6a4a; }
+  .overlay.chat .options .primary-btn{ background: #e8a04a; color: #fff; border-radius: 999px; padding: 0.62rem 1rem; text-align: center !important; justify-content: center; box-shadow: 0 4px 0 rgba(150,90,20,0.35); }
+  .overlay.chat .options .primary-btn::before, .overlay.chat .options .primary-btn::after{ content: none; }
+  .overlay.chat .custom-emotion-input{ background: #fffaf0; color: #5a3e22; border-radius: 999px; border: 2px solid #f0c27a; }
+  @media (max-width: 480px){
+    .overlay.chat .card-scroll{ padding: 1.6rem 1.3rem 1.9rem; }
+    .overlay.chat .options{ right: 1rem; bottom: 11.5rem; width: calc(100vw - 2rem); max-height: calc(100dvh - 18rem); }
+  }
+  .admin-link{ opacity: 0.55; }
+  .admin-pass{ display: flex; gap: 0.5rem; margin: 0.8rem 0 0.4rem; }
+  .admin-pass input{ flex: 1; min-width: 0; padding: 0.6rem 0.8rem; border-radius: 10px; border: 1px solid rgba(244,213,141,0.35); background: rgba(255,255,255,0.05); color: var(--text); font-size: 1rem; letter-spacing: 0.3em; }
+  .admin-err{ color: #f0a0a0; font-size: 0.84rem; min-height: 1.2em; margin: 0 0 0.6rem; }
+  .admin-layers{ display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin: 0.8rem 0; }
+  .admin-layers button{ padding: 0.7rem 0.6rem; border-radius: 12px; border: 1px solid rgba(244,213,141,0.3); background: rgba(244,213,141,0.08); color: var(--text); font-family: "Jua", sans-serif; font-size: 0.95rem; cursor: pointer; }
+  .admin-layers button:hover{ background: rgba(244,213,141,0.2); }
+  .admin-opt{ display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; margin: 0 0 0.9rem; cursor: pointer; }
+  .admin-row{ display: flex; justify-content: space-between; gap: 0.5rem; flex-wrap: wrap; }
   #btnView.near{ border-color: var(--gold); box-shadow: 0 0 14px rgba(244,213,141,0.5); }
   @media (max-width: 480px){
     body.scene3d .touch-controls{ gap: 0.25rem; padding: 0.4rem 0.5rem; }
@@ -1479,6 +1551,8 @@
       <button class="text-link" id="helpBtn">도움이 필요할 때</button>
       <span aria-hidden="true">·</span>
       <button class="text-link" id="clearDataBtn">내 기록 지우기</button>
+      <span aria-hidden="true">·</span>
+      <button class="text-link admin-link" id="adminBtn">관리자</button>
     </div>
   </div>
 
@@ -1570,7 +1644,7 @@
       explain: "심리학자 카를 융이 이름 붙인 개념이에요. 원래 연극에서 배우가 쓰던 '가면'을 뜻하는 말이죠. 우리도 회사에서, 친구들 앞에서, 가족 앞에서 저마다 조금씩 다른 모습을 보이며 살아가요. 이건 거짓이 아니라 사람들과 어울려 지내기 위해 누구나 만들어가는 자연스러운 겉모습이에요. 다만 그 가면에 너무 익숙해지면, 가면 뒤의 진짜 내 모습을 스스로도 잊어버릴 수 있어요.",
       questions: [
         {
-          question: "오늘, 사람들 앞에서 나는 주로 어떤 가면을 쓰고 있나요?",
+          question: "오늘, 사람들 앞에서 너는 주로 어떤 가면을 쓰고 있어?",
           options: [
             { id: "smile", text: "괜찮은 척, 늘 밝게 웃어 보이는 나", frag: "괜찮은 척 웃어 보이던 나" },
             { id: "capable", text: "빈틈없고 유능해 보이려 애쓰는 나", frag: "빈틈없이 유능해 보이려 애쓰던 나" },
@@ -1588,7 +1662,7 @@
           ]
         },
         {
-          question: "그 가면은 주로 언제 슬며시 올라오나요?",
+          question: "그 가면은 주로 언제 슬며시 올라와?",
           options: [
             { text: "낯선 사람들 사이에 있을 때", frag: "낯선 이들 앞에서 슬며시 올라오던 가면" },
             { text: "실수하거나 약한 모습을 들킬까 두려울 때", frag: "약한 모습을 들킬까 두려워 올려 쓰던 가면" },
@@ -1597,7 +1671,7 @@
           ]
         },
         {
-          question: "가면을 살짝 내려놓는다면, 그 아래엔 어떤 마음이 있을까요?",
+          question: "가면을 살짝 내려놓는다면, 그 아래엔 어떤 마음이 있을까?",
           options: [
             { text: "사실은 많이 지쳐 있는 마음", frag: "가면 아래 숨겨둔 지친 마음" },
             { text: "있는 그대로 이해받고 싶은 마음", frag: "가면 아래 숨겨둔, 이해받고 싶은 마음" },
@@ -1623,7 +1697,7 @@
       explain: "'자아(Ego)'는 지금 이 순간 '나는 나다'라고 느끼게 해주는, 의식의 중심이에요. 내가 무엇을 좋아하고 싫어하는지, 지금 무엇을 느끼고 원하는지 알아차리는 부분이 바로 자아죠. 융 심리학에서는 이 자아가 마음속 다른 조각들(그림자, 아니마·아니무스 등)과 잘 연결될수록, 더 단단하고 온전한 내가 될 수 있다고 보았어요.",
       questions: [
         {
-          question: "요즘의 나를 가장 잘 설명하는 감정은 무엇인가요?",
+          question: "요즘의 너를 가장 잘 설명하는 감정은 뭐야?",
           options: [
             { id: "calm", text: "평온함", frag: "평온함 속에 머물던 나" },
             { id: "anxious", text: "불안함", frag: "불안을 안고 걷던 나" },
@@ -1635,7 +1709,7 @@
           ]
         },
         {
-          question: "그 감정은 주로 어떤 순간에 가장 크게 느껴지나요?",
+          question: "그 감정은 주로 어떤 순간에 가장 크게 느껴져?",
           options: [
             { text: "혼자 있을 때", frag: "혼자일 때 가장 크게 밀려오던 감정" },
             { text: "사람들과 함께 있을 때", frag: "사람들 속에서 오히려 커지던 감정" },
@@ -1643,7 +1717,7 @@
           ]
         },
         {
-          question: "그 감정 아래에는 어떤 진짜 바람이 있을까요?",
+          question: "그 감정 아래에는 어떤 진짜 바람이 있을까?",
           options: [
             { text: "그저 쉬고 싶다는 바람", frag: "그 아래 있던, 그저 쉬고 싶다는 바람" },
             { text: "누군가에게 이해받고 싶다는 바람", frag: "그 아래 있던, 이해받고 싶다는 바람" },
@@ -1653,7 +1727,7 @@
         {
           // the ego is not only what I feel but what I choose — one question on will/agency,
           // so this layer isn't purely an emotion check-in
-          question: "요즘 내가 '스스로 선택했다'고 느끼는 일이 있나요?",
+          question: "요즘 네가 '스스로 선택했다'고 느끼는 일이 있어?",
           options: [
             { text: "작더라도 내 뜻대로 정한 일이 있다", frag: "작더라도 스스로 정해 온 나의 선택" },
             { text: "남의 기대에 맞춰 정한 일이 더 많다", frag: "남의 기대에 맞춰 정해 온 날들" },
@@ -1676,7 +1750,7 @@
       explain: "'그림자(Shadow)'는 내가 인정하고 싶지 않아서 마음 깊은 곳(개인무의식)에 밀어 넣어둔 모습들이에요. 화, 질투, 게으름처럼 '이건 나답지 않아'라며 외면해온 감정이나 성격이 여기 숨어 있죠. 그림자에는 실제로 다루기 어려운 충동도 있지만, 미처 펼치지 못한 재능이나 생명력(융 학파는 이를 '황금 그림자'라고도 불러요)도 함께 숨어 있어요. 융은 우리가 다른 사람에게서 유난히 거슬리거나 유난히 부러운 모습을 볼 때, 사실은 내 안의 그림자가 그 사람에게 비친 것(투사)일 때가 많다고 보았어요. 도망치기보다 알아차리고 마주할수록, 그 힘을 내 편으로 만들 수 있다는 게 융의 생각이었어요.",
       questions: [
         {
-          question: "내가 가장 마주하고 싶지 않은 내 모습은 무엇인가요?",
+          question: "네가 가장 마주하고 싶지 않은 네 모습은 뭐야?",
           pageSplit: 7, pagerLabels: ["← 앞의 모습", "다른 모습 더 보기 →"],
           options: [
             { id: "anger", text: "화를 참지 못하는 나", frag: "숨기고 싶었던 분노" },
@@ -1698,7 +1772,7 @@
           ]
         },
         {
-          question: "그 모습을 마주할 때, 어떤 반응이 먼저 나오나요?",
+          question: "그 모습을 마주할 때, 어떤 반응이 먼저 나와?",
           options: [
             { text: "얼른 눈을 돌리고 모른 척한다", frag: "얼른 눈을 돌리게 만들던 모습" },
             { text: "스스로를 탓하고 자책한다", frag: "자책하게 만들던 모습" },
@@ -1710,7 +1784,7 @@
           // projection — the most Jungian doorway to the shadow: what we react to most
           // strongly in others. Both directions (irritation and envy, the "golden shadow")
           // are offered, and the fragments stay descriptive rather than interpreting it.
-          question: "다른 사람에게서 유독 거슬리거나, 반대로 유독 부러운 모습이 있나요?",
+          question: "다른 사람에게서 유독 거슬리거나, 반대로 유독 부러운 모습이 있어?",
           pageSplit: 6, pagerLabels: ["← 거슬리는 모습", "부러운 모습 보기 →"],
           options: [
             { id: "showoff", text: "잘난 척하며 나서는 모습이 유독 거슬린다", frag: "남에게서 유독 눈에 걸리던 잘난 척", projection: true },
@@ -1758,7 +1832,7 @@
       explain: "'아니마·아니무스'는 의식의 나와 무의식 깊은 곳을 이어주는 '영혼의 안내자' 같은 원형(archetype)이에요. 원형은 개인의 경험을 넘어 인류가 공통으로 지닌 마음의 틀로, 집단무의식에 속해요. 우리가 어떤 사람에게 이유 없이 강하게 끌리거나 매혹될 때, 꿈속의 낯선 인물이 말을 걸어올 때, 그 모습이 드러나곤 해요. 융은 이를 성별과 연결해 남성 안의 여성상을 아니마, 여성 안의 남성상을 아니무스라 불렀지만, 오늘날 많은 분석가들은 성별과 무관하게 '나와 정반대이면서 나를 깊이로 이끄는 내면의 타자'로 이해해요.",
       questions: [
         {
-          question: "꿈속이나 이야기 속, 혹은 현실에서 이유 없이 마음이 끌렸던 인물이 있다면, 어떤 분위기였나요?",
+          question: "꿈속이나 이야기 속, 혹은 현실에서 이유 없이 마음이 끌렸던 인물이 있다면, 어떤 분위기였어?",
           options: [
             { id: "deep", text: "고요하고 깊은 눈을 가진 사람", frag: "고요하고 깊은 눈을 가진 인물에게 끌리던 마음" },
             { id: "wanderer", text: "자유롭게 길을 떠나는 방랑자", frag: "자유롭게 떠나는 방랑자에게 끌리던 마음" },
@@ -1770,7 +1844,7 @@
           ]
         },
         {
-          question: "그 인물에게 끌릴 때, 어떤 마음이 함께 드나요?",
+          question: "그 인물에게 끌릴 때, 어떤 마음이 함께 들어?",
           options: [
             { text: "이유를 알 수 없이 설레고 매혹된다", frag: "이유 모를 설렘과 매혹" },
             { text: "끌리면서도 어딘가 낯설고 두렵다", frag: "끌리면서도 낯설고 두렵던 마음" },
@@ -1779,7 +1853,7 @@
           ]
         },
         {
-          question: "그 인물이 길잡이가 되어 준다면, 나를 어디로 이끌 것 같나요?",
+          question: "그 인물이 길잡이가 되어 준다면, 너를 어디로 이끌 것 같아?",
           options: [
             { text: "아직 느껴보지 못한 감정의 깊이로", frag: "감정의 깊이로 이끌어 줄 내 안의 길잡이" },
             { text: "익숙한 틀 밖의 새로운 길로", frag: "익숙한 틀 밖으로 이끌어 줄 내 안의 길잡이" },
@@ -2240,7 +2314,8 @@
     focusFirstIn(card);
   }
   function closeOverlay(){
-    overlay.classList.remove("open", "dialogue-mode");
+    overlay.classList.remove("open", "dialogue-mode", "chat");
+    card.onclick = null;
     syncInert();
     const back = overlayReturnFocus;
     overlayReturnFocus = null;
@@ -2983,7 +3058,7 @@
     calm: { // 평온함 — 진짜 평온과 감정을 눌러서 만든 '가짜 평온'은 겉으로는 똑같아 보이니,
          // 그 둘을 구분해보게 하는 쪽으로 질문을 잡았다 (통찰 문구의 "억누름은 아니었는지"와 맞물리게)
       q2: {
-        question: "그 평온함은 주로 어떤 모습에 가까운가요?",
+        question: "그 평온함은 주로 어떤 모습에 가까워?",
         options: [
           { text: "정말 아무 걱정이 없는 평온", frag: "정말 걱정이 없을 때 느끼던 평온" },
           { text: "감정을 애써 누르고 있는 평온", frag: "감정을 눌러두고 있을 때 찾아오던 평온" },
@@ -2991,7 +3066,7 @@
         ]
       },
       q3: {
-        question: "그 평온함 아래에는 어떤 마음이 있을까요?",
+        question: "그 평온함 아래에는 어떤 마음이 있을까?",
         options: [
           { text: "정말 괜찮다는 편안함", frag: "그 아래 있던, 정말 괜찮다는 편안함" },
           { text: "사실은 지쳐서 아무것도 느끼고 싶지 않은 마음", frag: "그 아래 있던, 아무것도 느끼고 싶지 않은 지친 마음" },
@@ -3001,7 +3076,7 @@
     },
     anxious: { // 불안함
       q2: {
-        question: "그 불안함은 주로 어떤 순간에 가장 크게 느껴지나요?",
+        question: "그 불안함은 주로 어떤 순간에 가장 크게 느껴져?",
         options: [
           { text: "결과를 알 수 없는 일 앞에서", frag: "결과를 알 수 없을 때 밀려오던 불안" },
           { text: "다른 사람의 시선을 의식할 때", frag: "다른 사람의 시선 앞에서 커지던 불안" },
@@ -3009,7 +3084,7 @@
         ]
       },
       q3: {
-        question: "그 불안함 아래에는 어떤 진짜 바람이 있을까요?",
+        question: "그 불안함 아래에는 어떤 진짜 바람이 있을까?",
         options: [
           { text: "확실함을 붙잡고 싶은 마음", frag: "그 아래 있던, 확실함을 붙잡고 싶은 마음" },
           { text: "실수하고 싶지 않은 마음", frag: "그 아래 있던, 실수하고 싶지 않은 마음" },
@@ -3020,7 +3095,7 @@
     },
     confused: { // 혼란스러움
       q2: {
-        question: "그 혼란스러움은 주로 어떤 순간에 가장 크게 느껴지나요?",
+        question: "그 혼란스러움은 주로 어떤 순간에 가장 크게 느껴져?",
         options: [
           { text: "선택해야 할 일이 많을 때", frag: "선택의 갈림길에서 커지던 혼란" },
           { text: "여러 마음이 동시에 들 때", frag: "여러 마음이 부딪힐 때 커지던 혼란" },
@@ -3028,7 +3103,7 @@
         ]
       },
       q3: {
-        question: "그 혼란스러움 아래에는 어떤 진짜 바람이 있을까요?",
+        question: "그 혼란스러움 아래에는 어떤 진짜 바람이 있을까?",
         options: [
           { text: "명확한 답을 찾고 싶은 바람", frag: "그 아래 있던, 명확한 답을 찾고 싶은 바람" },
           { text: "누가 대신 정해줬으면 하는 마음", frag: "그 아래 있던, 대신 정해주길 바라는 마음" },
@@ -3039,7 +3114,7 @@
     },
     happy: { // 행복함
       q2: {
-        question: "그 행복함은 주로 어떤 순간에 가장 크게 느껴지나요?",
+        question: "그 행복함은 주로 어떤 순간에 가장 크게 느껴져?",
         options: [
           { text: "좋아하는 사람과 함께일 때", frag: "좋아하는 사람과 함께일 때 느끼던 행복" },
           { text: "작은 성취를 이뤘을 때", frag: "작은 성취를 이뤘을 때 느끼던 행복" },
@@ -3047,7 +3122,7 @@
         ]
       },
       q3: {
-        question: "그 행복함 아래에는 어떤 진짜 바람이 있을까요?",
+        question: "그 행복함 아래에는 어떤 진짜 바람이 있을까?",
         options: [
           { text: "이 순간이 오래 가길 바라는 마음", frag: "그 아래 있던, 이 순간이 오래가길 바라는 마음" },
           { text: "이 행복을 누군가와 나누고 싶은 마음", frag: "그 아래 있던, 나누고 싶은 마음" },
@@ -3058,7 +3133,7 @@
     sad: { // 슬픔
       q2: {
         // where sadness comes from: loss, frustration, being left out — or no reason at all
-        question: "그 슬픔은 어디에서 오는 것 같나요?",
+        question: "그 슬픔은 어디에서 오는 것 같아?",
         options: [
           { text: "소중한 사람이나 관계, 무언가를 잃었을 때", frag: "소중한 것을 잃은 데서 오던 슬픔" },
           { text: "애쓴 일이 뜻대로 되지 않았을 때", frag: "애쓴 일이 뜻대로 되지 않아 밀려오던 슬픔" },
@@ -3070,7 +3145,7 @@
       },
       q3: {
         // wishes that answer sadness itself — and pair with loss, frustration, being left out
-        question: "그 슬픔 아래에는 어떤 진짜 바람이 있을까요?",
+        question: "그 슬픔 아래에는 어떤 진짜 바람이 있을까?",
         options: [
           { text: "그냥 실컷 울고 싶은 마음", frag: "그 아래 있던, 실컷 울고 싶은 마음" },
           { text: "누군가 곁에 있어줬으면 하는 마음", frag: "그 아래 있던, 곁에 있어주길 바라는 마음" },
@@ -3085,7 +3160,7 @@
     lonely: { // 외로움
       q2: {
         // loneliness has many roots — asked as "where does it come from", not just "when"
-        question: "그 외로움은 어디에서 오는 것 같나요?",
+        question: "그 외로움은 어디에서 오는 것 같아?",
         options: [
           { text: "아무도 나를 진짜로 이해하지 못하는 것 같을 때", frag: "아무도 나를 이해하지 못하는 것 같던 외로움" },
           { text: "내 감정을 아무도 알아주지 않을 때", frag: "내 감정을 아무도 알아주지 않던 외로움" },
@@ -3097,7 +3172,7 @@
         ]
       },
       q3: {
-        question: "그 외로움 아래에는 어떤 진짜 바람이 있을까요?",
+        question: "그 외로움 아래에는 어떤 진짜 바람이 있을까?",
         options: [
           { text: "나와 비슷한 누군가와 연결되고 싶은 마음", frag: "그 아래 있던, 나와 비슷한 누군가와 연결되고 싶은 마음" },
           { text: "있는 그대로 이해받고 싶은 마음", frag: "그 아래 있던, 있는 그대로 이해받고 싶은 마음" },
@@ -3118,7 +3193,7 @@
   const PERSONA_FOLLOWUPS = {
     smile: { // 괜찮은 척, 늘 밝게 웃어 보이는 나
       q2: {
-        question: "그 밝은 미소는 주로 언제 반사적으로 나오나요?",
+        question: "그 밝은 미소는 주로 언제 반사적으로 나와?",
         options: [
           { text: "누군가 안부를 물어올 때", frag: "안부를 물어올 때마다 반사적으로 지어지던 미소" },
           { text: "분위기가 가라앉으려 할 때", frag: "가라앉는 분위기를 띄우려 지어지던 미소" },
@@ -3127,7 +3202,7 @@
         ]
       },
       q3: {
-        question: "그 미소 뒤에는 어떤 마음이 숨어 있을까요?",
+        question: "그 미소 뒤에는 어떤 마음이 숨어 있을까?",
         options: [
           { text: "사실은 많이 지쳐 있는 마음", frag: "미소 뒤에 숨겨둔 지친 마음" },
           { text: "슬퍼해도 될 자격이 없다고 느끼는 마음", frag: "미소 뒤에 숨겨둔, 슬퍼할 자격이 없다는 마음" },
@@ -3138,7 +3213,7 @@
     },
     capable: { // 빈틈없고 유능해 보이려 애쓰는 나
       q2: {
-        question: "그 완벽함은 주로 어떤 순간에 더 단단히 조여지나요?",
+        question: "그 완벽함은 주로 어떤 순간에 더 단단히 조여져?",
         options: [
           { text: "작은 실수 하나라도 눈에 띌까 봐", frag: "작은 실수도 들킬까 조여지던 완벽함" },
           { text: "누군가와 비교당하는 것 같을 때", frag: "비교당하는 순간마다 조여지던 완벽함" },
@@ -3147,7 +3222,7 @@
         ]
       },
       q3: {
-        question: "그 완벽함 아래에는 어떤 마음이 있을까요?",
+        question: "그 완벽함 아래에는 어떤 마음이 있을까?",
         options: [
           { text: "잘하지 못하면 사랑받지 못할 거라는 두려움", frag: "완벽함 아래 숨겨둔, 사랑받지 못할까 두려운 마음" },
           { text: "이만큼 해도 부족하다는 조바심", frag: "완벽함 아래 숨겨둔 조바심" },
@@ -3158,7 +3233,7 @@
     },
     cool: { // 아무렇지 않은 척, 무던하고 쿨하게 구는 나
       q2: {
-        question: "그 무심한 표정은 언제 가장 짙어지나요?",
+        question: "그 무심한 표정은 언제 가장 짙어져?",
         options: [
           { text: "상처받은 티를 내고 싶지 않을 때", frag: "상처를 감추려 짙어지던 무심함" },
           { text: "기대했다가 실망하고 싶지 않을 때", frag: "실망하지 않으려 짙어지던 무심함" },
@@ -3167,7 +3242,7 @@
         ]
       },
       q3: {
-        question: "그 무심함 아래에는 어떤 마음이 있을까요?",
+        question: "그 무심함 아래에는 어떤 마음이 있을까?",
         options: [
           { text: "사실은 꽤 크게 흔들리고 있는 마음", frag: "무심함 아래 숨겨둔, 크게 흔들리던 마음" },
           { text: "더는 상처받고 싶지 않은 마음", frag: "무심함 아래 숨겨둔, 상처받고 싶지 않은 마음" },
@@ -3178,7 +3253,7 @@
     },
     pleaser: { // 다 맞춰주고 좋은 사람이 되려는 나
       q2: {
-        question: "그 '좋은 사람'은 언제 특히 애를 쓰나요?",
+        question: "그 '좋은 사람'은 언제 특히 애를 써?",
         options: [
           { text: "누군가의 부탁을 거절하지 못할 때", frag: "부탁을 거절 못 해 애쓰던 좋은 사람" },
           { text: "갈등이 생길 것 같을 때", frag: "갈등을 피하려 애쓰던 좋은 사람" },
@@ -3187,7 +3262,7 @@
         ]
       },
       q3: {
-        question: "그 착함 아래에는 어떤 마음이 있을까요?",
+        question: "그 착함 아래에는 어떤 마음이 있을까?",
         options: [
           { text: "미움받을까 봐 두려운 마음", frag: "착함 아래 숨겨둔, 미움받을까 두려운 마음" },
           { text: "사실은 지치고 화가 나 있는 마음", frag: "착함 아래 숨겨둔 지침과 화" },
@@ -3198,7 +3273,7 @@
     },
     joker: { // 분위기를 띄우고 웃음을 주는 나
       q2: {
-        question: "그 유쾌함은 주로 언제 튀어나오나요?",
+        question: "그 유쾌함은 주로 언제 튀어나와?",
         options: [
           { text: "분위기가 어색해질 때", frag: "어색함을 깨려 튀어나오던 유쾌함" },
           { text: "누군가 힘들어 보일 때", frag: "누군가를 웃기려 튀어나오던 유쾌함" },
@@ -3207,7 +3282,7 @@
         ]
       },
       q3: {
-        question: "그 웃음 아래에는 어떤 마음이 있을까요?",
+        question: "그 웃음 아래에는 어떤 마음이 있을까?",
         options: [
           { text: "사실은 나도 위로받고 싶은 마음", frag: "웃음 아래 숨겨둔, 위로받고 싶은 마음" },
           { text: "진지해지면 분위기를 망칠까 걱정하는 마음", frag: "웃음 아래 숨겨둔, 분위기를 망칠까 걱정하는 마음" },
@@ -3218,7 +3293,7 @@
     },
     strong: { // 세고 강해 보이려 애쓰는 나
       q2: {
-        question: "그 단단한 모습은 주로 언제 힘주어 나오나요?",
+        question: "그 단단한 모습은 주로 언제 힘주어 나와?",
         options: [
           { text: "누군가에게 기대는 게 약해 보일 것 같을 때", frag: "기대는 게 약해 보일까 힘주던 단단함" },
           { text: "위기나 어려운 상황 앞에서", frag: "위기 앞에서 힘주어 세우던 단단함" },
@@ -3227,7 +3302,7 @@
         ]
       },
       q3: {
-        question: "그 단단함 아래에는 어떤 마음이 있을까요?",
+        question: "그 단단함 아래에는 어떤 마음이 있을까?",
         options: [
           { text: "사실은 누구보다 두려운 마음", frag: "단단함 아래 숨겨둔 두려움" },
           { text: "기대고 싶지만 방법을 모르는 마음", frag: "단단함 아래 숨겨둔, 기대고 싶은 마음" },
@@ -3238,7 +3313,7 @@
     },
     authentic: { // 꾸미지 않고 있는 그대로 보여주는 나
       q2: {
-        question: "그 '있는 그대로'의 모습은 주로 누구 앞에서 가능한가요?",
+        question: "그 '있는 그대로'의 모습은 주로 누구 앞에서 가능해?",
         options: [
           { text: "정말 편안한 소수의 사람 앞에서만", frag: "소수의 편안한 사람 앞에서만 가능했던 있는 그대로" },
           { text: "의외로 낯선 사람 앞에서 더 편하게", frag: "낯선 사람 앞에서 오히려 편했던 있는 그대로" },
@@ -3247,7 +3322,7 @@
         ]
       },
       q3: {
-        question: "그 모습으로 있을 때, 어떤 마음이 드나요?",
+        question: "그 모습으로 있을 때, 어떤 마음이 들어?",
         options: [
           { text: "편안하고 자유로운 마음", frag: "있는 그대로일 때 느끼는 편안함" },
           { text: "그래도 어딘가 남아있는 불안한 마음", frag: "있는 그대로일 때도 남아있는 불안" },
@@ -3258,7 +3333,7 @@
     },
     hedgehog: { // 어색하고 긴장돼서, 누가 다가올까 봐 미리 경계하는 나 (고슴도치)
       q2: {
-        question: "그 경계심은 주로 언제 가장 날카로워지나요?",
+        question: "그 경계심은 주로 언제 가장 날카로워져?",
         options: [
           { text: "처음 보는 사람이 말을 걸어올 때", frag: "낯선 이가 다가올 때 곤두서던 가시" },
           { text: "누군가 내 이야기를 깊이 물어올 때", frag: "깊이 물어올 때 곤두서던 가시" },
@@ -3267,7 +3342,7 @@
         ]
       },
       q3: {
-        question: "가시 안쪽에는 어떤 마음이 있을까요?",
+        question: "가시 안쪽에는 어떤 마음이 있을까?",
         options: [
           { text: "다가가고 싶지만 다칠까 두려운 마음", frag: "가시 안쪽, 다가가고 싶지만 두려운 마음" },
           { text: "있는 그대로 받아줄 사람을 기다리는 마음", frag: "가시 안쪽, 받아줄 사람을 기다리는 마음" },
@@ -3278,7 +3353,7 @@
     },
     owl: { // "난 관심 없어" 하며 일부러 한발 물러서 있는 나 (올빼미·방관자)
       q2: {
-        question: "한발 물러서게 되는 건 주로 언제인가요?",
+        question: "한발 물러서게 되는 건 주로 언제야?",
         options: [
           { text: "모두가 무언가에 열을 올릴 때", frag: "모두가 열을 올릴 때 물러서던 마음" },
           { text: "누군가 나에게 기대를 걸어올 때", frag: "기대를 걸어올 때 물러서던 마음" },
@@ -3287,7 +3362,7 @@
         ]
       },
       q3: {
-        question: "무관심한 척 뒤에는 어떤 마음이 있을까요?",
+        question: "무관심한 척 뒤에는 어떤 마음이 있을까?",
         options: [
           { text: "사실은 신경 쓰이지만, 실망하기 싫은 마음", frag: "무관심 뒤에 숨겨둔, 실망하기 싫은 마음" },
           { text: "깊이 얽혔다가 다칠까 두려운 마음", frag: "무관심 뒤에 숨겨둔, 다칠까 두려운 마음" },
@@ -3298,7 +3373,7 @@
     },
     martyr: { // 나보다 남을 먼저 챙기며 짐을 대신 지는 나 (상처받은 치유자·순교자)
       q2: {
-        question: "남의 짐을 먼저 지게 되는 건 주로 언제인가요?",
+        question: "남의 짐을 먼저 지게 되는 건 주로 언제야?",
         options: [
           { text: "누군가 힘들어 보일 때", frag: "힘들어 보이는 이 앞에서 먼저 지던 짐" },
           { text: "부탁을 거절하면 미안해질 때", frag: "거절이 미안해 떠안던 짐" },
@@ -3307,7 +3382,7 @@
         ]
       },
       q3: {
-        question: "남을 먼저 챙기는 마음 아래에는 무엇이 있을까요?",
+        question: "남을 먼저 챙기는 마음 아래에는 무엇이 있을까?",
         options: [
           { text: "나도 누군가에게 돌봄받고 싶은 마음", frag: "그 아래 숨겨둔, 돌봄받고 싶은 마음" },
           { text: "지쳐도 쉬면 안 될 것 같은 마음", frag: "그 아래 숨겨둔, 쉬면 안 될 것 같은 마음" },
@@ -3318,7 +3393,7 @@
     },
     invisible: { // 눈에 띄지 않게, 조용히 존재감을 지우는 나 (거북이·투명인간)
       q2: {
-        question: "존재감을 지우고 싶어지는 건 주로 언제인가요?",
+        question: "존재감을 지우고 싶어지는 건 주로 언제야?",
         options: [
           { text: "여러 사람의 시선이 모일 때", frag: "시선이 모일 때 지우던 존재감" },
           { text: "실수하거나 비난받을까 걱정될 때", frag: "비난이 두려워 지우던 존재감" },
@@ -3327,7 +3402,7 @@
         ]
       },
       q3: {
-        question: "등껍질 속에는 어떤 마음이 있을까요?",
+        question: "등껍질 속에는 어떤 마음이 있을까?",
         options: [
           { text: "사실은 누군가 알아봐 주길 바라는 마음", frag: "등껍질 속, 알아봐 주길 바라는 마음" },
           { text: "드러나면 상처받을 것 같은 두려움", frag: "등껍질 속, 드러나면 다칠 것 같은 두려움" },
@@ -3668,10 +3743,11 @@
   function buildObstacles(layer, objects, npcZ){
     const out = { obs: null };
     const midZ = Math.round(npcZ * 0.48);
-    if (layer.key === "ego"){
-      out.obs = { type: "fog", z: midZ, p: 0, cleared: false, hinted: false };
-    } else if (layer.key === "shadow"){
-      out.obs = { type: "retreat", retreated: 0, still: 0, settled: false, hinted: false };
+    if (layer.key === "shadow"){
+      // in 3D the shadow follows behind you, unseen until you turn around; the flat scene keeps
+      // the older version where it backs away while you chase it
+      out.obs = USE3D ? { type: "behind", heard: false, prompt: false, faced: false, still: 0, gap: 99999, lastPrompt: 0 }
+                      : { type: "retreat", retreated: 0, still: 0, settled: false, hinted: false };
     }
     return out;
   }
@@ -3769,7 +3845,7 @@
     const world = Forest3D.build({
       key: layer.key,
       avatar: { outfit: AVATAR.outfit, hair: AVATAR.hair },
-      guide: isSelf ? null : spec(layer),
+      guide: isSelf ? null : Object.assign(spec(layer), layer.key === "shadow" ? { mood: "dark" } : {}),
       ring: isSelf ? layers.filter(l => l.key !== "self").map(spec) : [],
       animaForm: layer.key === "anima" ? state.animaForm : null
     });
@@ -3800,6 +3876,8 @@
     sceneFlashEl.classList.remove("show");
     const btnV = document.getElementById("btnView");
     btnV.classList.remove("near"); btnV.setAttribute("aria-pressed", "false");
+    if (doorWashEl && doorWashEl.classList.contains("show")) setTimeout(hideDoorWash, prefersReducedMotion() ? 300 : 1300);
+    if (isSelf){ const sc = () => scene; setTimeout(() => { if (sc() && sc().isSelf && !sc().lookedBack) showEdgeHint("숲 끝에 바다가 열렸어요. 잠깐, 뒤를 돌아봐도 좋아요", 3800); }, 2800); }
     scene = {
       idx, layer, isSelf, objects, npcZ, npcObj: npcRef,
       obs: extras.obs, pool: layer.moonPool ? {} : null,
@@ -3821,35 +3899,131 @@
       o.el.style.width = r.width + "px"; o.el.style.height = r.height + "px";
     });
   }
+  const EGG_LINES = {
+    persona: "숨은 길을 찾았어요 🌿 벗어 둔 가면들의 공터. 한때 나를 지켜 준 얼굴들이에요",
+    ego: "숨은 길을 찾았어요 🌿 작은 나침반 언덕. 바늘은 언제나 당신 쪽을 가리켜요",
+    shadow: "숨은 길을 찾았어요 🌿 어릴 적 방의 한 구석. 잊은 게 아니라 잠시 넣어 둔 것뿐이에요",
+    anima: "숨은 길을 찾았어요 🌿 흰 새가 앉은 우물. 깊은 곳에서 누군가 당신을 부르고 있어요"
+  };
+  function foundEgg(key){
+    if (!state.eggs) state.eggs = {};
+    if (state.eggs[key]){ showEdgeHint("다시 찾아온 숨은 길이에요 🌿", 2200); return; }
+    state.eggs[key] = true; save(); Sound.chime();
+    showEdgeHint(`${EGG_LINES[key]} (숨은 길 ${Object.keys(state.eggs).length}/4)`, 4800);
+  }
+  function eggNote(){
+    const n = state.eggs ? Object.keys(state.eggs).length : 0;
+    return n ? `<p class="egg-note">🌿 숲에서 숨은 길 ${n}/4곳을 찾았어요${n === 4 ? " — 구석구석 걸어 주셨네요" : ""}</p>` : "";
+  }
+  // the shadow: it walks behind you, unseen. One extra set of footsteps, then "turn around"
+  function updateBehind(o, r, now, dt){
+    const GU = Forest3D.world.GUIDE_U, u = scene.traveled / K3;
+    if (!o.heard && u > GU * 0.42){ o.heard = true; showEdgeHint("뒤에서… 발소리가 하나 더 들리는 것 같아요", 3400); }
+    if (o.heard && !o.faced){
+      if (r.speed !== 0) o.still = 0; else if (!o.still) o.still = now;
+      if (!o.prompt && ((o.still && now - o.still > 1400) || u > GU * 0.6)){ o.prompt = true; o.lastPrompt = 0; }
+      if (o.prompt && now - o.lastPrompt > 7000){
+        o.lastPrompt = now;
+        showEdgeHint(o.prompted ? "뒤를 돌아보세요" : "뒤를 돌아보세요 — A/D로 돌거나, 화면을 끌거나, 🙂 버튼을 눌러 보세요", 4400);
+        o.prompted = true;
+      }
+      if (r.sees){ o.faced = true; o.capU = u; Sound.chime(); showEdgeHint("그림자는 늘, 당신 뒤에 있었어요", 3400); }
+    }
+    if (o.faced){
+      // once seen, it comes a little closer
+      if (!scene.answered) scene.npcZ += ((u - 3.3) * K3 - scene.npcZ) * Math.min(1, dt / 900);
+      o.gap = r.guideDist * K3;
+    }
+  }
   function loop3D(now, dt){
     const W = Forest3D.world;
     if (!scene || !W) return;
-    if (overlay.classList.contains("open") || infoOverlay.classList.contains("open") || scene.ending){
-      Forest3D.frame(now, dt, { frozen: true, npcU: scene.npcZ != null ? scene.npcZ / K3 : null });
+    if (overlay.classList.contains("open") || infoOverlay.classList.contains("open") || (scene.ending && !scene.pierWalk)){
+      if (talkPrompt.classList.contains("show")){ talkPrompt.classList.remove("show"); scene.talkReady = null; }
+      Forest3D.frame(now, dt, { frozen: true, npcU: scene.npcZ != null ? scene.npcZ / K3 : null, hideGuide: false,
+        talk: overlay.classList.contains("open") && overlay.classList.contains("dialogue-mode") && !scene.isSelf });
       syncAnchors3D();
       return;
     }
-    let cap = scene.isSelf ? scene.selfEnd + 24 : (scene.answered ? scene.doorZ + 120 : scene.npcZ - W.stopDist * K3);
+    const o = scene.obs, behind = !!(o && o.type === "behind");
+    let cap;
+    if (scene.isSelf) cap = scene.pierWalk ? W.PIER_END_U * K3 + 12 : scene.selfEnd + 24;
+    else if (scene.answered) cap = scene.doorZ + 120;
+    else if (behind) cap = o.faced ? o.capU * K3 + 30 : W.GUIDE_U * 0.72 * K3;
+    else cap = scene.npcZ - W.stopDist * K3;
     const blocked = obstacleBlocks();
     if (blocked) cap = Math.min(cap, scene.obs.z - 150 + 24);
+    if (behind && !o.faced) scene.npcZ = Math.max(0.3, scene.traveled / K3 - 6.2) * K3;
     const r = Forest3D.frame(now, dt, {
       fwd: keys.forward, back: keys.back, left: keys.lookL, right: keys.lookR,
       maxU: cap / K3, npcU: scene.npcZ != null ? scene.npcZ / K3 : null,
+      hideGuide: behind && !o.heard, noAside: behind && !o.faced,
       slow: scene.isSelf ? Math.max(0.32, Math.min(1, (cap - scene.traveled) / 420)) : 1,
       onViewEnd(){ const b = document.getElementById("btnView"); b.classList.remove("near"); b.setAttribute("aria-pressed", "false"); }
     });
     scene.traveled = r.u * K3;
     scene.speed = r.speed > 0 ? r.speed * K3 / 1000 : (r.speed < 0 ? -0.01 : 0);
-    if (Math.abs(r.speed) > 1 && now - (scene.lastStepAt || 0) > 430){ scene.lastStepAt = now; Sound.step(); }
-    if (!scene.isSelf && !scene.answered && !blocked && keys.forward && scene.traveled >= cap - 20 && now - scene.lastHintAt > 2400){
+    if (Math.abs(r.speed) > 1 && now - (scene.lastStepAt || 0) > 430){
+      scene.lastStepAt = now; Sound.step(r.surface);
+      // one set of footsteps too many
+      if (behind && o.heard && !o.faced) setTimeout(() => Sound.step(r.surface), 230);
+    }
+    if (behind) updateBehind(o, r, now, dt);
+    if (W.SNAKE_US && W.SNAKE_US.length){
+      if (!scene.snakeHinted && scene.traveled / K3 > W.SNAKE_US[0] - 7){ scene.snakeHinted = true; showEdgeHint("길 위를 무언가 가로지르고 있어요… 부딪히지 않게 틈을 보고 지나가 보세요", 3800); }
+      if (r.hit){ Sound.blip(); showEdgeHint(scene.snakeHits ? "앗, 조심해요!" : "앗! 잠깐 멈췄다가, 뱀이 지나간 틈으로 가 보세요", 2400); scene.snakeHits = (scene.snakeHits || 0) + 1; }
+    }
+    if (behind && !o.faced && keys.forward && scene.traveled >= cap - 20 && now - scene.lastHintAt > 5000){
+      scene.lastHintAt = now; showEdgeHint("앞에는 아무도 없어요. 뒤를 돌아보세요");
+    }
+    if (!scene.isSelf && !scene.answered && !blocked && !behind && keys.forward && scene.traveled >= cap - 20 && now - scene.lastHintAt > 2400){
       scene.lastHintAt = now;
       showEdgeHint(`먼저 ${scene.layer.npcName}와 이야기를 나눠보세요`);
     }
-    if (!scene.isSelf){ updateObstacles(dt, now); revealNpc(scene.npcZ - scene.traveled); }
-    scene.objects.forEach(o => { if (o.appearAt != null) W.setRingAppear(o.key, Math.max(0, Math.min(1, (scene.traveled - o.appearAt) / 320))); });
+    if (!scene.isSelf){ updateObstacles(dt, now); if (behind) W.setReveal(1); else revealNpc(scene.npcZ - scene.traveled); }
+    if (scene.isSelf && r.lookBack && !scene.lookedBack){
+      scene.lookedBack = true;
+      showEdgeHint("당신이 걸어온 길이에요. 가면의 숲, 노을 숲, 비 내린 숲, 달빛 숲…", 4600);
+    }
+    if (scene.pierWalk && !scene.sailing && r.u >= W.PIER_END_U - 0.4){
+      scene.sailing = true;
+      W.boatDepart();
+      Sound.swell();
+      releaseKeys();
+      sceneView.classList.add("ending");
+      endingTimers.push(setTimeout(() => {
+        const el = document.createElement("div");
+        el.className = "boat-end";
+        el.setAttribute("role", "status");
+        el.innerHTML = `<p class="boat-line">이제, 나의 진짜 여정이 시작됩니다.</p><button class="end-continue">여정 돌아보기</button>`;
+        sceneViewportEl.appendChild(el);
+        void el.offsetWidth; el.classList.add("show");
+        Sound.chime();
+        const b = el.querySelector(".end-continue");
+        b.onclick = scene.boatFinish;
+        endingTimers.push(setTimeout(() => b.focus({ preventScroll: true }), 1600));
+      }, prefersReducedMotion() ? 1500 : 6500));
+    }
+    scene.objects.forEach(ob => { if (ob.appearAt != null) W.setRingAppear(ob.key, Math.max(0, Math.min(1, (scene.traveled - ob.appearAt) / 320))); });
     syncAnchors3D();
     checkTriggers(true);
   }
+
+  /* the door: it opens into the next layer's light, which fills the screen with that layer's name */
+  let doorWashEl = null;
+  function showDoorWash(next){
+    if (!next) return;
+    if (!doorWashEl){ doorWashEl = document.createElement("div"); doorWashEl.id = "doorWash"; doorWashEl.setAttribute("aria-hidden", "true"); document.body.appendChild(doorWashEl); }
+    const [c0, c1] = next.atmosphere.from;
+    const lum = h => { const n = parseInt(h.slice(1), 16); return ((n >> 16) * 0.3 + ((n >> 8) & 255) * 0.59 + (n & 255) * 0.11) / 255; };
+    doorWashEl.style.background = `radial-gradient(circle at 50% 55%, ${c1} 0%, ${c0} 75%)`;
+    doorWashEl.style.setProperty("--dw-ink", lum(c1) > 0.62 ? "#3b2a0c" : "#fff8e8");
+    const sub = (next.title || "").split("—")[1];
+    doorWashEl.innerHTML = `<div class="dw-title">${next.icon || ""} ${next.name}${sub ? `<small>${sub.trim()}</small>` : ""}</div>`;
+    void doorWashEl.offsetWidth;
+    doorWashEl.classList.add("show");
+  }
+  function hideDoorWash(){ if (doorWashEl) doorWashEl.classList.remove("show"); }
 
   function buildScene(idx){
     if (USE3D) return buildScene3D(idx);
@@ -4092,7 +4266,7 @@
     // the first time per layer; after that it's one tap away on ⓘ instead of interrupting
     const key = layers[idx].key;
     if (!state.seenInfo) state.seenInfo = {};
-    if (!state.seenInfo[key]){
+    if (!state.seenInfo[key] && !GREETINGS[key]){
       setTimeout(() => {
         if (scene && scene.idx === idx){ showInfo(scene.layer); state.seenInfo[key] = true; save(); }
       }, 700);
@@ -4111,7 +4285,7 @@
     if (overlay.classList.contains("dialogue-mode")) closeOverlay();
     scene = null;
     document.body.classList.remove("in-scene", "scene3d");
-    if (USE3D) Forest3D.clear();
+    if (USE3D){ Forest3D.clear(); hideDoorWash(); }
     startMotes();
     Sound.ambience("map");
     sceneView.classList.add("hidden");
@@ -4133,7 +4307,23 @@
     endingTimers = [];
     const el = sceneViewportEl.querySelector(".self-ending");
     if (el) el.remove();
+    const be = sceneViewportEl.querySelector(".boat-end");
+    if (be) be.remove();
     sceneView.classList.remove("ending");
+  }
+  // after the last words, a small boat comes in to the shore and carries you out toward the sun:
+  // the end of this walk is where your own journey starts
+  // after the last words you walk out along the pier yourself; the boat waits at its end
+  function boatDeparture(wrap, finish){
+    if (!scene || scene.pierWalk) return;
+    wrap.classList.add("s-leave");
+    endingTimers.push(setTimeout(() => wrap.remove(), 1300));
+    sceneView.classList.remove("ending");
+    scene.pierWalk = true;
+    scene.boatFinish = finish;
+    Forest3D.world.pierWalk();
+    Sound.swell();
+    endingTimers.push(setTimeout(() => { if (scene && scene.pierWalk && !scene.sailing) showEdgeHint("선착장 끝에 작은 배가 기다리고 있어요. 걸어가 보세요", 4200); }, 1100));
   }
   function startSelfEnding(){
     if (!scene || scene.ending || scene.ended) return;
@@ -4177,7 +4367,7 @@
         <p class="end-line l1">자신을 알기 위해, 혹은 찾기 위해<br>당신은 용기 내어 이 여정을 시작했습니다.<br>그리고 이제, 모든 조각이 하나로 모여 셀프에 닿았습니다.</p>
         <p class="end-line l2">셀프는 이 여정의 중심이자 전부였고,<br>처음부터 밖이 아닌 당신 안에 있었습니다.</p>
         <p class="end-line l3">당신은 지금 그대로,<br>온전하고 충분합니다.</p>
-        <button class="end-continue">여정 돌아보기</button>
+        <button class="end-continue">${USE3D ? "배에 오르기 ⛵" : "여정 돌아보기"}</button>
       </div>
       <button class="end-skip">건너뛰기 ›</button>
     `;
@@ -4188,7 +4378,7 @@
       clearSelfEnding();
       completeScene();
     };
-    wrap.querySelector(".end-continue").onclick = finish;
+    wrap.querySelector(".end-continue").onclick = USE3D ? () => boatDeparture(wrap, finish) : finish;
     const showFinal = () => {
       endingTimers.forEach(clearTimeout);
       endingTimers = [];
@@ -4371,7 +4561,10 @@
       renderQuestion();
     } else if (layer.key === "persona"){
       // before the guide lifts its own mask, you shape yours from what you just said
-      showMaskWorkshop(layer, () => finishDialogue(layer));
+      const r = personaReading();
+      delete state.mask;
+      save();
+      speakLines(layer, [`네가 고른 건 ‘${r.name}’이구나.`, r.seen, r.intent, r.flex], () => finishDialogue(layer), "계속 걷기");
     } else {
       finishDialogue(layer);
     }
@@ -4388,8 +4581,9 @@
       // the token you just earned becomes a literal key: a door in that color appears
       // ahead, and walking up to it is what actually carries you into the next layer
       const doorColor = (state.items && state.items[layer.key]) || MASK_PALETTE[0];
-      const doorZ = scene.npcZ + (USE3D ? 9 * K3 : 260);
-      if (USE3D) Forest3D.world.showDoor(doorZ / K3, doorColor);
+      const behindDoor = USE3D && scene.obs && scene.obs.type === "behind";
+      const doorZ = behindDoor ? scene.traveled + 8 * K3 : scene.npcZ + (USE3D ? 9 * K3 : 260);
+      if (USE3D){ Forest3D.world.showDoor(doorZ / K3, doorColor); if (behindDoor) Forest3D.world.faceAlongPath(); }
       const doorObj = makeObj({
         type: "door", x: 0, z: doorZ, width: 100, height: 170, anchor: "bottom",
         html: doorMarkup(doorColor)
@@ -4568,49 +4762,49 @@
   // what each mask has been protecting — never a diagnosis: "it seems", "it resembles";
   // always the mask as a shield that did its job, and at the end how to wear it lightly
   const PERSONA_READINGS = {
-    smile: { name: "광대의 가면", seen: "늘 밝게 웃어 보이는 모습으로 스스로를 지켜 오신 것 같아요.",
-      intent: "그 웃음은 불안이나 지친 마음을 들키지 않으려고, 마음이 열심히 만들어 낸 방패였어요.",
-      flex: "웃고 싶을 땐 웃고, 지칠 땐 웃음을 잠시 내려놓아도 괜찮아요." },
-    joker: { name: "분위기 메이커의 가면", seen: "분위기를 띄우는 역할로 자리를 지켜 오신 면이 보여요.",
-      intent: "어색해지거나 밀려날까 봐, 유쾌함으로 마음을 단단히 무장해 온 것일지도 몰라요.",
-      flex: "웃음을 주지 않아도, 당신은 그 자리에 있어도 되는 사람이에요." },
-    cool: { name: "성벽의 가면", seen: "아무렇지 않은 척, 감정의 문을 단단히 닫아 두는 가면을 쓰고 계신 것 같아요.",
-      intent: "그 무던함은 쉽게 상처받지 않으려고 마음이 쌓아 올린 성벽이었어요.",
-      flex: "믿을 수 있는 사람 앞에서는 성문을 조금 열어 두어도 괜찮아요." },
-    pleaser: { name: "착한 양의 가면", seen: "다 맞춰 주며 좋은 사람이 되려는 모습과 닮은 면이 보여요.",
-      intent: "부딪히고 멀어지는 게 두려워서, 갈등을 피하는 쪽으로 스스로를 지켜 온 거예요.",
-      flex: "가끔은 '나는 이게 좋아'라고 말해도, 소중한 관계는 무너지지 않아요." },
-    strong: { name: "사자의 가면", seen: "세고 강해 보이려는 가면으로 스스로를 지켜 오신 것 같아요.",
-      intent: "그 단단함 뒤에는, 약한 모습을 들키면 다칠 것 같은 마음이 있었을지 몰라요.",
-      flex: "기대고 싶을 땐 기대도, 당신의 힘은 사라지지 않아요." },
-    capable: { name: "완벽주의자의 가면", seen: "빈틈없고 유능해 보이려는 가면을 쓰고 계신 면이 보여요.",
-      intent: "인정받고 안전하고 싶어서, 작은 실수에도 마음이 늘 긴장해 있었을 거예요.",
-      flex: "완벽하지 않은 날에도, 당신의 가치는 그대로예요." },
-    hedgehog: { name: "고슴도치의 가면", seen: "누가 다가오기 전에 먼저 가시를 세워 두는 가면을 쓰고 계신 것 같아요.",
-      intent: "어색함과 긴장은 상처받지 않으려는 마음이 미리 쳐 둔 울타리였어요.",
-      flex: "편한 사람 앞에서는 가시를 조금 눕혀 보아도 괜찮아요." },
-    owl: { name: "올빼미의 가면", seen: "'난 관심 없어' 하며 한발 물러서 지켜보는 가면과 닮은 면이 보여요.",
-      intent: "깊이 얽혔다가 다칠까 봐, 일부러 거리를 두며 마음을 지켜 온 거예요.",
-      flex: "모든 일에 마음을 쓰지 않아도 돼요. 다만 정말 아끼는 것 앞에서는 한 걸음 다가가 보아도 괜찮아요." },
-    martyr: { name: "상처받은 치유자의 가면", seen: "나보다 남을 먼저 챙기며 짐을 대신 지는 가면을 쓰고 계신 것 같아요.",
-      intent: "누군가에게 필요한 사람일 때 비로소 안심이 되었기에, 그렇게 자신의 자리를 지켜 왔을 거예요.",
-      flex: "남을 돌보는 그 다정함을, 이제 당신 자신에게도 조금 나눠 주세요." },
-    invisible: { name: "거북이의 가면", seen: "눈에 띄지 않게 존재감을 조용히 지우는 가면과 닮은 면이 보여요.",
-      intent: "주목이나 비난을 피하려고, 마음이 등껍질 속으로 몸을 숨겨 온 거예요.",
-      flex: "숨고 싶은 날엔 숨어도 괜찮아요. 그리고 가끔은, 당신의 목소리를 내도 괜찮아요." },
-    authentic: { name: "맨얼굴의 가면", seen: "꾸미지 않고 있는 그대로를 보여줄 수 있는 편안함이 느껴져요.",
-      intent: "그건 가면 없이도 괜찮다고 느끼는, 마음의 단단함이에요.",
-      flex: "그래도 가면이 필요한 순간은 와요. 필요할 때 쓰고 다시 벗을 수 있다면, 그걸로 충분해요." }
+    smile: { name: "광대의 가면", seen: "늘 밝게 웃어 보이는 모습으로 너를 지켜 온 것 같아.",
+      intent: "그 웃음은 불안이나 지친 마음을 들키지 않으려고, 마음이 열심히 만들어 낸 방패였어.",
+      flex: "웃고 싶을 땐 웃고, 지칠 땐 웃음을 잠시 내려놓아도 괜찮아." },
+    joker: { name: "분위기 메이커의 가면", seen: "분위기를 띄우는 역할로 자리를 지켜 온 게 보여.",
+      intent: "어색해지거나 밀려날까 봐, 유쾌함으로 마음을 단단히 무장해 온 걸지도 몰라.",
+      flex: "웃음을 주지 않아도, 너는 그 자리에 있어도 되는 사람이야." },
+    cool: { name: "성벽의 가면", seen: "아무렇지 않은 척, 감정의 문을 단단히 닫아 두는 가면을 쓰고 있는 것 같아.",
+      intent: "그 무던함은 쉽게 상처받지 않으려고 마음이 쌓아 올린 성벽이었어.",
+      flex: "믿을 수 있는 사람 앞에서는 성문을 조금 열어 둬도 괜찮아." },
+    pleaser: { name: "착한 양의 가면", seen: "다 맞춰 주며 좋은 사람이 되려는 모습이 보여.",
+      intent: "부딪히고 멀어지는 게 두려워서, 갈등을 피하는 쪽으로 너를 지켜 온 거야.",
+      flex: "가끔은 '나는 이게 좋아'라고 말해도, 소중한 관계는 무너지지 않아." },
+    strong: { name: "사자의 가면", seen: "세고 강해 보이려는 가면으로 너를 지켜 온 것 같아.",
+      intent: "그 단단함 뒤에는, 약한 모습을 들키면 다칠 것 같은 마음이 있었을지도 몰라.",
+      flex: "기대고 싶을 땐 기대도 돼. 그래도 네 힘은 사라지지 않아." },
+    capable: { name: "완벽주의자의 가면", seen: "빈틈없고 유능해 보이려는 가면을 쓰고 있는 게 보여.",
+      intent: "인정받고 안전하고 싶어서, 작은 실수에도 마음이 늘 긴장해 있었을 거야.",
+      flex: "완벽하지 않은 날에도, 네 가치는 그대로야." },
+    hedgehog: { name: "고슴도치의 가면", seen: "누가 다가오기 전에 먼저 가시를 세워 두는 가면을 쓰고 있는 것 같아.",
+      intent: "어색함과 긴장은 상처받지 않으려는 마음이 미리 쳐 둔 울타리였어.",
+      flex: "편한 사람 앞에서는 가시를 조금 눕혀 봐도 괜찮아." },
+    owl: { name: "올빼미의 가면", seen: "'난 관심 없어' 하며 한발 물러서 지켜보는 가면이 보여.",
+      intent: "깊이 얽혔다가 다칠까 봐, 일부러 거리를 두며 마음을 지켜 온 거야.",
+      flex: "모든 일에 마음을 쓰지 않아도 돼. 다만 정말 아끼는 것 앞에서는 한 걸음 다가가 봐도 괜찮아." },
+    martyr: { name: "상처받은 치유자의 가면", seen: "너보다 남을 먼저 챙기며 짐을 대신 지는 가면을 쓰고 있는 것 같아.",
+      intent: "누군가에게 필요한 사람일 때 비로소 안심이 됐기에, 그렇게 네 자리를 지켜 왔을 거야.",
+      flex: "남을 돌보는 그 다정함을, 이제 너 자신에게도 조금 나눠 줘." },
+    invisible: { name: "거북이의 가면", seen: "눈에 띄지 않게 존재감을 조용히 지우는 가면이 보여.",
+      intent: "주목이나 비난을 피하려고, 마음이 등껍질 속으로 몸을 숨겨 온 거야.",
+      flex: "숨고 싶은 날엔 숨어도 괜찮아. 그리고 가끔은, 네 목소리를 내도 괜찮아." },
+    authentic: { name: "맨얼굴의 가면", seen: "꾸미지 않고 있는 그대로를 보여 줄 수 있는 편안함이 느껴져.",
+      intent: "그건 가면 없이도 괜찮다고 느끼는, 마음의 단단함이야.",
+      flex: "그래도 가면이 필요한 순간은 와. 필요할 때 쓰고 다시 벗을 수 있다면, 그걸로 충분해." }
   };
   function personaReading(){
     const id = layerChoiceId("persona") || "custom";
     if (PERSONA_READINGS[id]) return PERSONA_READINGS[id];
     const t = (state.custom && state.custom.persona && state.custom.persona[0]) || "";
     return {
-      name: t ? `"${escapeHtml(t)}" 가면` : "당신만의 가면",
-      seen: t ? `${quoteTyped(escapeHtml(t), "가면으로 스스로를 지켜 오신 것 같아요.")}` : "당신만의 가면으로 스스로를 지켜 오신 것 같아요.",
-      intent: "어떤 가면이든, 그건 당신을 지키려고 마음이 애써 만든 방패였어요.",
-      flex: "상황에 따라 쓰고 벗을 수 있다면, 가면은 짐이 아니라 도구가 돼요."
+      name: t ? `"${escapeHtml(t)}" 가면` : "너만의 가면",
+      seen: t ? `${quoteTyped(escapeHtml(t), "가면으로 너를 지켜 온 것 같아.")}` : "너만의 가면으로 너를 지켜 온 것 같아.",
+      intent: "어떤 가면이든, 그건 너를 지키려고 마음이 애써 만든 방패였어.",
+      flex: "상황에 따라 쓰고 벗을 수 있다면, 가면은 짐이 아니라 도구가 돼."
     };
   }
 
@@ -4705,9 +4899,11 @@
       const branchKey = scene.qIndex === 1 ? "q2" : scene.qIndex === 2 ? "q3" : null;
       if (branch && branchKey && branch[branchKey]) q = branch[branchKey];
     }
+    card.onclick = null;
+    overlay.classList.toggle("chat", USE3D);
     card.innerHTML = `
       <div class="npc-portrait idle-breathe${layer.key === "anima" && scene.qIndex === 1 && ANIMA_FORMS[state.animaForm] ? " morph" : ""}">${npcSVG(layer)}</div>
-      <div class="dialogue-body">
+      <div class="dialogue-body"${USE3D ? " data-chat" : ""}>
         <div class="dialogue-top">
           <div class="badge">${layer.npcName}${total > 1 ? ` · ${scene.qIndex + 1}/${total}` : ""}</div>
           <div class="dialogue-tools">
@@ -4715,11 +4911,11 @@
             <button class="pause-btn" id="dlgPauseBtn" aria-label="대화 잠시 멈추기">잠시 멈추기 ✕</button>
           </div>
         </div>
-        ${scene.qIndex === 0 ? `<p class="desc">${layer.desc}</p>` : ""}
+        ${scene.qIndex === 0 && !scene.greetedTalk ? `<p class="desc">${layer.desc}</p>` : ""}
         ${layer.key === "anima" && scene.qIndex === 1 && ANIMA_FORMS[state.animaForm]
           ? `<p class="morph-note">✦ 안내자가 당신이 끌렸던 모습, &lsquo;${ANIMA_FORMS[state.animaForm].name}&rsquo;의 모습으로 바뀌었어요.</p>` : ""}
         <p class="question">${q.question}</p>
-        ${layer.key === "persona" && scene.qIndex === 0 ? `<p class="multi-note">마음이 여러 갈래라면 여러 개를 골라도 괜찮아요.</p>` : ""}
+        ${layer.key === "persona" && scene.qIndex === 0 ? `<p class="multi-note">마음이 여러 갈래라면 여러 개를 골라도 괜찮아.</p>` : ""}
         <div class="options" role="group" aria-label="선택지"></div>
       </div>
     `;
@@ -4777,6 +4973,12 @@
         const portrait = card.querySelector(".npc-portrait");
         if (portrait) setTimeout(() => portrait.classList.toggle("pleased", selected.size > 0), 0);
         if (isSelected) selected.add(i); else selected.delete(i);
+        if (USE3D && isSelected && layer.key === "persona" && !scene.unmasked){
+          scene.unmasked = true;
+          Forest3D.world.liftMask();
+          Sound.chime();
+          showEdgeHint("가면 아래, 맑은 눈이 당신을 바라봐요", 2800);
+        }
         if (opt.custom && customInput){
           customInput.hidden = !isSelected;
           if (isSelected) customInput.focus();
@@ -4823,6 +5025,12 @@
     }
     optsEl.appendChild(confirmBtn);
     if (showPage) showPage(0, false);
+    if (USE3D){
+      const qEl = card.querySelector(".question");
+      const show = () => { optsEl.classList.add("shown"); const f = [...optsEl.querySelectorAll("button")].find(b => !b.hidden); if (f) f.focus({ preventScroll: true }); };
+      const finishNow = typeLine(qEl, qEl.textContent, show);
+      card.onclick = e => { if (!e.target.closest(".options, .dialogue-tools")) finishNow(); };
+    }
   }
 
   // the guide's response once the conversation is done: the persona guide lifts its mask
@@ -4834,7 +5042,7 @@
       sceneViewportEl.classList.remove("raining");
       Rain.stop(false);
       sceneViewportEl.classList.add("after-rain");
-      if (USE3D) Forest3D.world.clearRain();
+      if (USE3D){ Forest3D.world.clearRain(); Forest3D.world.setMood(false); }
       sceneViewportEl.style.setProperty("--vig-clear", USE3D ? "52%" : "34%");
       Sound.stopRain();
       showEdgeHint("비가 그쳤어요. 마주하고 나니, 공기가 조금 가벼워졌어요", 2600);
@@ -4849,7 +5057,7 @@
       sp.className = "unmask-sparkle";
       el.appendChild(sp);
       setTimeout(() => sp.remove(), 1600);
-      showEdgeHint("가면 아래, 맑은 눈이 당신을 바라봐요", 2600);
+      if (!(USE3D && scene.unmasked)) showEdgeHint("가면 아래, 맑은 눈이 당신을 바라봐요", 2600);
     }
   }
 
@@ -4899,19 +5107,101 @@
     }, reduce ? 200 : 900);
   }
 
+  // each guide says who it is before asking anything, instead of a concept card popping up on arrival
+  const GREETINGS = {
+    persona: ["안녕, 난 너의 페르소나야.", "사람들 앞에 설 때 네가 쓰는 얼굴이지. 나쁜 게 아니야. 그동안 너를 지켜 준 가면이니까.", "오늘은 그 가면을, 나랑 잠깐 같이 들여다볼래?"],
+    ego: ["안녕, 난 너의 자아야.", "네가 '나'라고 느끼는 마음의 한가운데에서, 네 감정과 선택을 지켜보고 있어.", "지금 네 마음이 어떤지, 같이 살펴볼까?"],
+    shadow: ["안녕, 난 너의 그림자야.", "네가 보고 싶지 않아서 뒤에 숨겨 둔 모습이지. 그래서 늘 네 뒤에 있었어.", "무서워하지 않아도 돼. 나도 너의 일부니까."],
+    anima: ["안녕, 난 너의 아니마·아니무스야.", "네 안에 있는 또 다른 나. 네가 끌리는 누군가의 모습으로 나타나곤 해.", "넌 어떤 모습에 마음이 가는지, 들려줄래?"]
+  };
+  // typed out a letter at a time; a click finishes the line at once
+  function typeLine(el, text, done){
+    if (!USE3D || prefersReducedMotion()){ el.textContent = text; if (done) done(); return () => {}; }
+    let i = 0, timer = null;
+    const finish = () => { clearInterval(timer); timer = null; el.textContent = text; if (done){ const d = done; done = null; d(); } };
+    el.textContent = "";
+    timer = setInterval(() => { i++; el.textContent = text.slice(0, i); if (i >= text.length) finish(); }, 32);
+    return () => { if (timer) finish(); };
+  }
+  // the guide says a few lines in turn: typed into the speech bubble in 3D, one card in the flat scene
+  const plainText = h => { const d = document.createElement("div"); d.innerHTML = h; return d.textContent; };
+  function speakLines(layer, lines, onDone, btnLabel){
+    if (!USE3D){
+      card.onclick = null;
+      card.innerHTML = `
+        <div class="npc-portrait idle-breathe">${npcSVG(layer)}</div>
+        <div class="dialogue-body">
+          <div class="dialogue-top">
+            <div class="badge">${layer.npcName}</div>
+            <div class="dialogue-tools">
+              <button class="info-btn" id="dlgInfoBtn" title="이 개념 설명 보기" aria-label="${layer.name} 개념 설명 보기">ⓘ</button>
+              <button class="pause-btn" id="dlgPauseBtn" aria-label="대화 잠시 멈추기">잠시 멈추기 ✕</button>
+            </div>
+          </div>
+          ${lines.map((l, i) => i === 0 ? `<p class="question greet-hello">${l}</p>` : `<p class="desc greet-line">${l}</p>`).join("")}
+          <button class="primary-btn" id="greetGoBtn">${btnLabel}</button>
+        </div>`;
+      card.querySelector("#dlgPauseBtn").onclick = pauseDialogue;
+      card.querySelector("#dlgInfoBtn").onclick = () => showInfo(layer);
+      const go = card.querySelector("#greetGoBtn");
+      go.onclick = () => { Sound.blip(); onDone(); };
+      setTimeout(() => { if (document.contains(go)) go.focus({ preventScroll: true }); }, 60);
+      return;
+    }
+    const said = lines.map(plainText);
+    overlay.classList.add("chat");
+    card.innerHTML = `
+      <div class="dialogue-body" data-chat>
+        <div class="dialogue-top">
+          <div class="badge">${layer.npcName}</div>
+          <div class="dialogue-tools">
+            <button class="info-btn" id="dlgInfoBtn" title="이 개념 설명 보기" aria-label="${layer.name} 개념 설명 보기">ⓘ</button>
+            <button class="pause-btn" id="dlgPauseBtn" aria-label="대화 잠시 멈추기">잠시 멈추기 ✕</button>
+          </div>
+        </div>
+        <p class="question greet-hello" aria-live="polite"></p>
+        <button class="chat-next" id="greetGoBtn" aria-label="다음">▼</button>
+      </div>`;
+    card.querySelector("#dlgPauseBtn").onclick = e => { e.stopPropagation(); pauseDialogue(); };
+    card.querySelector("#dlgInfoBtn").onclick = e => { e.stopPropagation(); showInfo(layer); };
+    const textEl = card.querySelector(".greet-hello"), next = card.querySelector("#greetGoBtn");
+    let n = 0, finishLine = typeLine(textEl, said[0]);
+    const advance = () => {
+      // a click on a line still being typed just finishes it
+      if (textEl.textContent !== said[n]){ finishLine(); return; }
+      n++;
+      Sound.blip();
+      if (n >= said.length){ card.onclick = null; onDone(); return; }
+      finishLine = typeLine(textEl, said[n]);
+    };
+    card.onclick = e => { if (e.target.closest(".dialogue-tools")) return; advance(); };
+    setTimeout(() => { if (document.contains(next)) next.focus({ preventScroll: true }); }, 60);
+  }
+  function renderGreeting(){
+    scene.greetedTalk = true;
+    speakLines(scene.layer, GREETINGS[scene.layer.key], () => renderQuestion(), "이야기 시작하기");
+  }
+  // any other card shown in the dialogue overlay (the mask workshop, readings) keeps its own look
+  new MutationObserver(() => { if (!card.querySelector("[data-chat]")) overlay.classList.remove("chat"); }).observe(card, { childList: true });
   function openDialogue(){
     Sound.blip();
     scene.qIndex = 0;
     resetLayerAnswers(scene.layer.key);
+    if (GREETINGS[scene.layer.key] && !scene.greetedTalk){ renderGreeting(); openOverlay("dialogue"); return; }
     renderQuestion();
     openOverlay("dialogue");
   }
 
+  function npcGap(){
+    const o = scene.obs;
+    if (o && o.type === "behind") return o.faced ? o.gap : 99999;
+    return scene.npcZ - scene.traveled;
+  }
   function tryTalk(){
     // the dialogue overlay being open must block this too — otherwise Space mid-conversation
     // restarted the questions from 1 while the answers already given stayed recorded
     if (!scene || scene.isSelf || scene.answered || anyOverlayOpen()) return;
-    const distToNpc = scene.npcZ - scene.traveled;
+    const distToNpc = npcGap();
     if (distToNpc < TALK_DIST) openDialogue();
     else showEdgeHint(`조금 더 다가가면 ${scene.layer.npcName}와 이야기할 수 있어요`);
   }
@@ -5116,7 +5406,7 @@
   function checkTriggers(viewMoved){
     if (!scene) return;
     if (!scene.isSelf){
-      const distToNpc = scene.npcZ - scene.traveled;
+      const distToNpc = npcGap();
       const npcObj = scene.npcObj;
       const show = distToNpc < TALK_DIST && distToNpc > -80 && !scene.answered;
       talkPrompt.classList.toggle("show", show);
@@ -5141,10 +5431,16 @@
         scene.doorTriggered = true;
         const doorObj = scene.objects.find(o => o.type === "door");
         if (doorObj) doorObj.el.classList.add("door-opening");
-        if (USE3D) Forest3D.world.openDoor();
         Sound.swell();
-        sceneFlashEl.classList.add("show");
-        setTimeout(completeScene, prefersReducedMotion() ? 150 : 550);
+        if (USE3D){
+          const next = layers[scene.idx + 1], red = prefersReducedMotion();
+          Forest3D.world.openDoor(next ? next.atmosphere.from[1] : null);
+          setTimeout(() => showDoorWash(next), red ? 80 : 900);
+          setTimeout(completeScene, red ? 300 : 1800);
+        } else {
+          sceneFlashEl.classList.add("show");
+          setTimeout(completeScene, prefersReducedMotion() ? 150 : 550);
+        }
       }
     } else {
       if (scene.traveled >= (scene.selfEnd != null ? scene.selfEnd : SELF_Z - SELF_STOP) - 2) startSelfEnding();
@@ -5174,7 +5470,7 @@
     if (USE3D && e.code === "Space" && !onButton){
       e.preventDefault();
       if (e.repeat) return;
-      const near = !scene.isSelf && !scene.answered && scene.npcZ - scene.traveled < TALK_DIST;
+      const near = !scene.isSelf && !scene.answered && npcGap() < TALK_DIST;
       if (near) tryTalk(); else if (!scene.ending && Forest3D.world) Forest3D.world.jump();
       return;
     }
@@ -5468,17 +5764,20 @@
         const d = new Float32Array(analyser.fftSize); analyser.getFloatTimeDomainData(d);
         let pk = 0; for (const v of d) pk = Math.max(pk, Math.abs(v)); return pk;
       },
-      step(){
+      // footsteps: soft earth by default; stone clicks brighter and shorter, sand is a long hush,
+      // wet ground a little splashier, grass muffled
+      step(surface){
         if (!enabled || !ctx) return;
         const t = ctx.currentTime;
+        const k = { stone: [1700, 0.05, 0.08], sand: [430, 0.04, 0.22], wet: [1150, 0.05, 0.17], grass: [520, 0.035, 0.14] }[surface] || [700, 0.045, 0.13];
         const src = ctx.createBufferSource(); src.buffer = noise || (noise = noiseBuffer());
-        const f = ctx.createBiquadFilter(); f.type = "lowpass"; f.frequency.value = 700 + Math.random() * 300;
+        const f = ctx.createBiquadFilter(); f.type = surface === "wet" ? "bandpass" : "lowpass"; f.frequency.value = k[0] + Math.random() * 300;
         const g = ctx.createGain();
         g.gain.setValueAtTime(0.0001, t);
-        g.gain.linearRampToValueAtTime(0.045, t + 0.01);
-        g.gain.exponentialRampToValueAtTime(0.0001, t + 0.13);
+        g.gain.linearRampToValueAtTime(k[1], t + 0.01);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + k[2]);
         src.connect(f); f.connect(g); route(g, 1, 0.15);
-        src.start(t, Math.random() * 1.5, 0.15);
+        src.start(t, Math.random() * 1.5, k[2] + 0.03);
       },
       stopRain(){
         if (!ctx || !amb || !amb.rainGain) return;
@@ -5528,9 +5827,16 @@
         </div>
       </div>
       <p class="onboard-note">이 여정은 융(C.G. Jung)의 분석심리학을 바탕으로 한 자기성찰 체험이에요. 심리검사나 진단·치료를 대신하지 않아요. 마음이 많이 힘들 땐 지도 아래 &lsquo;도움이 필요할 때&rsquo;를 눌러 주세요.</p>
+      <label class="onboard-sound"><input type="checkbox" id="onbSound" checked> 🔊 소리와 함께 걷기 <span>(이어폰 추천 · 오른쪽 위에서 언제든 끌 수 있어요)</span></label>
       <button class="info-close-btn" id="infoCloseBtn">숲으로 들어가기</button>
     `;
-    closeInfo.onClose = () => { state.onboarded = true; save(); };
+    // closing is a click or a key press, so the browser lets sound start right here
+    closeInfo.onClose = () => {
+      state.onboarded = true;
+      const cb = document.getElementById("onbSound");
+      if (cb && cb.checked && !Sound.enabled){ if (Sound.setEnabled(true)) state.soundOn = true; syncSoundBtn(); }
+      save();
+    };
     const preview = infoCard.querySelector("#avatarPreview");
     const sync = () => {
       preview.innerHTML = `<div class="idle-breathe">${chibiSVG({ outfit: AVATAR.outfit, hair: AVATAR.hair })}</div>`;
@@ -5595,6 +5901,74 @@
   }
   document.getElementById("aboutBtn").addEventListener("click", showAbout);
   document.getElementById("helpBtn").addEventListener("click", () => showSupport(false));
+  /* ---------------- admin mode: jump straight into any layer to check changes ----------------
+     The password only keeps it out of the way of ordinary players; it lives in this page's own
+     code, so it isn't real protection. Unlocked once per browser tab. */
+  const ADMIN_PASS = "9757";
+  const adminUnlocked = () => { try{ return sessionStorage.getItem("mmAdmin") === "1"; }catch(e){ return false; } };
+  function showAdmin(){
+    if (!adminUnlocked()){
+      infoCard.innerHTML = `
+        <span class="badge">🔧 관리자 모드</span>
+        <h2>비밀번호를 입력해 주세요</h2>
+        <form class="admin-pass" id="adminForm"><input type="password" id="adminPw" inputmode="numeric" autocomplete="off" aria-label="관리자 비밀번호"><button class="info-close-btn" type="submit">확인</button></form>
+        <p class="admin-err" id="adminErr" role="alert"></p>
+        <button class="info-close-btn" id="infoCloseBtn">닫기</button>`;
+      openInfoOverlay();
+      const pw = infoCard.querySelector("#adminPw");
+      setTimeout(() => pw.focus(), 80);
+      infoCard.querySelector("#adminForm").onsubmit = e => {
+        e.preventDefault();
+        if (pw.value === ADMIN_PASS){ try{ sessionStorage.setItem("mmAdmin", "1"); }catch(err){} showAdmin(); }
+        else { infoCard.querySelector("#adminErr").textContent = "비밀번호가 맞지 않아요."; pw.value = ""; pw.focus(); }
+      };
+      return;
+    }
+    infoCard.innerHTML = `
+      <span class="badge">🔧 관리자 모드</span>
+      <h2>바로 들어갈 층을 고르세요</h2>
+      <p class="onboard-note">순서와 상관없이 바로 들어가요. 앞 층의 답이 없으면 마지막 정리 화면 일부가 비어 보일 수 있어요.</p>
+      <div class="admin-layers">${layers.map((l, i) => `<button data-admin="${i}">${l.icon || ""} ${l.name}</button>`).join("")}</div>
+      <label class="admin-opt"><input type="checkbox" id="adminNear" checked> 안내자 바로 앞에서 시작 <span class="onboard-note" style="margin:0">(그림자는 뒤따라오기 직전, 자기는 바닷가 앞)</span></label>
+      <div class="admin-row">
+        <button class="text-link" id="adminReset">진행 처음으로 되돌리기</button>
+        <button class="text-link" id="adminLock">관리자 모드 잠그기</button>
+        <button class="info-close-btn" id="infoCloseBtn">닫기</button>
+      </div>`;
+    openInfoOverlay();
+    infoCard.querySelectorAll("[data-admin]").forEach(b => b.onclick = () => adminEnter(+b.dataset.admin, infoCard.querySelector("#adminNear").checked));
+    infoCard.querySelector("#adminLock").onclick = () => { try{ sessionStorage.removeItem("mmAdmin"); }catch(e){} closeInfo(); };
+    infoCard.querySelector("#adminReset").onclick = () => {
+      if (!confirm("지금까지의 답과 진행이 모두 지워져요. 되돌릴까요?")) return;
+      const keep = { onboarded: state.onboarded, seenInfo: state.seenInfo, soundOn: state.soundOn, avatar: state.avatar };
+      state = Object.assign(freshState(), keep);
+      save(); closeInfo(); renderMap();
+    };
+  }
+  function adminEnter(idx, near){
+    closeInfo();
+    if (scene) leaveScene();
+    enterScene(idx);
+    if (!near) return;
+    const key = layers[idx].key;
+    const place = () => {
+      if (!scene || scene.idx !== idx) return true;
+      if (USE3D && Forest3D.world){
+        const W = Forest3D.world, u = key === "shadow" ? W.GUIDE_U * 0.4 : key === "self" ? W.GUIDE_U - 6 : W.GUIDE_U - W.stopDist - 0.05;
+        if (W.S.u < u - 1) W.goTo(u);
+        scene.traveled = W.S.u * K3;
+        return W.S.u >= u - 1;
+      }
+      scene.traveled = scene.npcZ ? Math.max(0, scene.npcZ - 420) : Math.max(0, SELF_Z - 400);
+      scene.dirty = true;
+      return true;
+    };
+    // right away, and again a moment later in case the first frames hadn't settled yet
+    place();
+    [250, 700, 1500].forEach(t => setTimeout(place, t));
+  }
+  document.getElementById("adminBtn").addEventListener("click", showAdmin);
+
   document.getElementById("clearDataBtn").addEventListener("click", () => {
     if (!confirm("이 기기에 저장된 여정 기록을 모두 지울까요? 보관된 지난 여정도 함께 지워지고, 되돌릴 수 없어요.")) return;
     try{ localStorage.removeItem(STORAGE_KEY); }catch(e){}
