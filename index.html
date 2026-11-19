@@ -1358,6 +1358,10 @@
   .shout-bubble.shake{ animation: shoutShake 0.4s ease; }
   @keyframes shoutShake{ 0%,100%{ margin-left: 0 } 25%{ margin-left: -6px } 75%{ margin-left: 6px } }
   @media (prefers-reduced-motion: reduce){ .shout-bubble, .shout-bubble.shake{ transition: opacity 0.2s; animation: none; } }
+  /* falling into the hidden well: the screen goes under deep moonlit water, then clears */
+  #wellFade{ position: fixed; inset: 0; z-index: 60; pointer-events: none; opacity: 0; transition: opacity 0.6s ease;
+    background: radial-gradient(circle at 50% 45%, rgba(190,235,255,0.9) 0%, rgba(80,120,200,0.95) 35%, #1a1640 80%); }
+  #wellFade.show{ opacity: 1; }
   .toast{
     position: fixed; left: 50%; bottom: 24px; z-index: 20;
     transform: translate(-50%, 20px);
@@ -3929,6 +3933,30 @@
     return n ? `<p class="egg-note">🌿 숲에서 숨은 길 ${n}/4곳을 찾았어요${n === 4 ? " — 구석구석 걸어 주셨네요" : ""}</p>` : "";
   }
   // the shadow: it walks behind you, unseen. One extra set of footsteps, then "turn around"
+  // the anima's hidden well: step into it and you come up in the moon pool, right in front of the guide.
+  // Nothing announces it; it just happens.
+  function wellPlunge(){
+    const sc = scene, reduce = prefersReducedMotion();
+    sc.plunging = true;
+    releaseKeys();
+    Forest3D.world.jump();
+    Sound.swell();
+    let fade = document.getElementById("wellFade");
+    if (!fade){ fade = document.createElement("div"); fade.id = "wellFade"; fade.setAttribute("aria-hidden", "true"); document.body.appendChild(fade); }
+    setTimeout(() => { if (scene === sc) fade.classList.add("show"); }, reduce ? 0 : 300);
+    setTimeout(() => {
+      if (scene !== sc){ fade.classList.remove("show"); return; }
+      const W = Forest3D.world;
+      sc.surfaced = true;
+      W.surfaceAt(W.GUIDE_U - W.stopDist + 0.05);
+      sc.traveled = W.S.u * K3;
+      fade.classList.remove("show");
+      Sound.chime();
+      showEdgeHint("(…꿈인가?)", 2400);
+    }, reduce ? 500 : 1300);
+    setTimeout(() => { if (scene === sc) sc.plunging = false; }, reduce ? 700 : 2000);
+    setTimeout(() => { if (scene === sc && !sc.answered) showEdgeHint("물결을 지나… 어느새 달빛 웅덩이 앞이에요", 3400); }, reduce ? 2900 : 3800);
+  }
   function snakeStrike(o){
     const sc = scene;
     Forest3D.world.lunge();
@@ -4105,6 +4133,7 @@
     if (blocked) cap = Math.min(cap, scene.obs.z - 150 + 24);
     if (behind && !o.faced) scene.npcZ = Math.max(0.3, scene.traveled / K3 - 6.2) * K3;
     const r = Forest3D.frame(now, dt, {
+      frozen: !!scene.plunging,
       fwd: keys.forward, back: keys.back, left: keys.lookL, right: keys.lookR,
       maxU: cap / K3, npcU: scene.npcZ != null ? scene.npcZ / K3 : null,
       hideGuide: behind && !o.heard, noAside: behind && !o.faced,
@@ -4112,6 +4141,8 @@
       onViewEnd(){ const b = document.getElementById("btnView"); b.classList.remove("near"); b.setAttribute("aria-pressed", "false"); }
     });
     scene.traveled = r.u * K3;
+    if (r.egg === "anima" && !scene.answered) showEdgeHint("이 우물은 뭘까요? 신비로운 빛이 나요… 한번 들어가 볼까요?", 5000);
+    if (r.plunge && !scene.answered) wellPlunge();
     if (scene.fork && scene.fork.asked && W.FORK) updateFork(r);
     scene.speed = r.speed > 0 ? r.speed * K3 / 1000 : (r.speed < 0 ? -0.01 : 0);
     if (Math.abs(r.speed) > 1 && now - (scene.lastStepAt || 0) > 430){
@@ -5437,7 +5468,7 @@
     }
     if (!scene.glimpsed && t > 0.06 && !obstacleBlocks() && !edgeHint.classList.contains("show")){
       scene.glimpsed = true;
-      if (scene.layer.glimpse) showEdgeHint(scene.layer.glimpse, 2800);
+      if (scene.layer.glimpse && !scene.surfaced) showEdgeHint(scene.layer.glimpse, 2800);
     }
     return 0.3 + 0.7 * k;
   }
