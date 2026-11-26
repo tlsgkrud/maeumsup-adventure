@@ -1680,7 +1680,7 @@
   <button class="sound-btn" id="soundBtn" aria-pressed="false">🔈 소리 켜기</button>
 
 <script src="lib/three.min.js"></script>
-<script src="lib/forest3d.js?v=202611261115"></script>
+<script src="lib/forest3d.js?v=202611261125"></script>
 <script>
 (function(){
   /* ---------------- data ---------------- */
@@ -4211,8 +4211,10 @@
       W.boatDepart();
       Sound.swell();
       releaseKeys();
-      sceneView.classList.add("ending");
+      // the buttons stay live a while: you steer with the tiller before the last words come up
+      endingTimers.push(setTimeout(() => showEdgeHint(IS_TOUCH ? "◀ ▶ 버튼으로 키를 잡고, 배의 방향을 바꿔 볼 수 있어요" : "A/D로 키를 잡고, 배의 방향을 바꿔 볼 수 있어요", 4200), prefersReducedMotion() ? 600 : 2200));
       endingTimers.push(setTimeout(() => {
+        sceneView.classList.add("ending");
         const el = document.createElement("div");
         el.className = "boat-end";
         el.setAttribute("role", "status");
@@ -4223,7 +4225,7 @@
         const b = el.querySelector(".end-continue");
         b.onclick = scene.boatFinish;
         endingTimers.push(setTimeout(() => b.focus({ preventScroll: true }), 1600));
-      }, prefersReducedMotion() ? 1500 : 6500));
+      }, prefersReducedMotion() ? 2500 : 9500));
     }
     scene.objects.forEach(ob => { if (ob.appearAt != null) W.setRingAppear(ob.key, Math.max(0, Math.min(1, (scene.traveled - ob.appearAt) / 320))); });
     syncAnchors3D();
