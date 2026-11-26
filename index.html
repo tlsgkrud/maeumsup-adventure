@@ -1680,7 +1680,7 @@
   <button class="sound-btn" id="soundBtn" aria-pressed="false">🔈 소리 켜기</button>
 
 <script src="lib/three.min.js"></script>
-<script src="lib/forest3d.js?v=202611261053"></script>
+<script src="lib/forest3d.js?v=202611261112"></script>
 <script>
 (function(){
   /* ---------------- data ---------------- */
@@ -4864,11 +4864,66 @@
         showEdgeHint("가면 아래, 맑은 눈이 당신을 바라봐요", 2800);
       }
       speakLines(layer, [`네가 고른 건 ‘${r.name}’이구나.`, r.seen, r.intent, r.flex], () => finishDialogue(layer), "계속 걷기");
+    } else if (layer.key === "anima"){
+      // which kind of figure drew you, what it stands for, where it would lead you; then on to the bridge
+      speakLines(layer, animaReading(layer), () => finishDialogue(layer), "계속 걷기");
+    } else if (layer.key === "shadow"){
+      // the shadow sums up before it lets you go: what you saw in others (projection, or the golden
+      // shadow if it was something you envied), then back to the part of you that you named first
+      speakLines(layer, shadowReading(layer), () => finishDialogue(layer), "계속 걷기");
     } else if (layer.key === "ego" && USE3D && Forest3D.world && Forest3D.world.FORK){
       openForkAsk(layer);
     } else {
       finishDialogue(layer);
     }
+  }
+
+  const ANIMA_MEANING = {
+    deep: "그건 네 안의 아니마·아니무스가 '깊이'의 얼굴을 하고 있다는 뜻이야. 바쁘게 지나쳐 온 감정과 마음속을, 천천히 들여다보고 싶은 마음이지.",
+    wanderer: "그건 네 안의 아니마·아니무스가 '자유'의 얼굴을 하고 있다는 뜻이야. 정해진 틀을 벗어나, 아직 가 보지 않은 곳으로 떠나고 싶은 마음이지.",
+    pathfinder: "그건 네 안의 아니마·아니무스가 '확신'의 얼굴을 하고 있다는 뜻이야. 망설임을 넘어, 스스로 길을 정하고 나아가고 싶은 힘이지.",
+    tender: "그건 네 안의 아니마·아니무스가 '다정함'의 얼굴을 하고 있다는 뜻이야. 누군가를, 그리고 너 자신을 따뜻하게 돌보고 싶은 마음이지.",
+    creator: "그건 네 안의 아니마·아니무스가 '열정'의 얼굴을 하고 있다는 뜻이야. 마음속에 품은 무언가를 세상에 꺼내 만들어 내고 싶은 힘이지."
+  };
+  function animaReading(layer){
+    const picks = (state.picks && state.picks.anima) || [], custom = (state.custom && state.custom.anima) || [];
+    const q1 = layer.questions[0].options[(picks[0] || [])[0]], q3 = layer.questions[2].options[(picks[2] || [])[0]];
+    const lines = [];
+    if (q1 && !q1.custom && ANIMA_FORMS[q1.id]){
+      lines.push(`네가 끌렸던 건 '${ANIMA_FORMS[q1.id].name}'이었구나.`, ANIMA_MEANING[q1.id]);
+    } else {
+      const t = (custom[0] || "").trim();
+      lines.push(t ? `네가 끌렸던 건 '${t}'의 모습이었구나.` : "네가 끌렸던 그 모습, 잘 기억해 둘게.",
+        "그건 네 안에서 아직 이름 붙지 않은 가능성이 너를 부르고 있다는 뜻이야.");
+    }
+    if (q3 && /^나를/.test(q3.text)) lines.push("그 모습은 네가 너 자신을 더 다정하게 돌보도록 이끌고 싶어 해.");
+    else if (q3 && !/모르겠다/.test(q3.text)) lines.push(`그 모습은 너를 ${q3.text} 데려가고 싶어 해.`);
+    else lines.push("어디로 이끌지는 아직 몰라도 괜찮아. 길잡이는 천천히 모습을 드러내니까.");
+    lines.push("융은 이렇게 내 안에 있는 또 다른 나를 '아니마·아니무스'라고 불렀어. 누군가에게 이유 없이 끌리는 건, 그 모습이 네 안에서 깨어나길 기다리고 있어서일지도 몰라.",
+      "이제 그 모습을 밖에서만 찾지 않아도 돼. 마음의 가장 깊은 곳으로, 같이 건너가자.");
+    return lines;
+  }
+  function shadowReading(layer){
+    const picks = (state.picks && state.picks.shadow) || [], custom = (state.custom && state.custom.shadow) || [];
+    const q1 = layer.questions[0].options[(picks[0] || [])[0]], q3 = layer.questions[2].options[(picks[2] || [])[0]];
+    const me = q1 ? (q1.custom ? (custom[0] || "그 모습") : q1.text) : "그 모습";
+    const lines = [];
+    if (!q3 || q3.id === "none"){
+      lines.push("아직 떠오르지 않아도 괜찮아. 앞으로 누군가가 유독 거슬리거나 부러운 순간이 오면, 오늘 이 숲을 떠올려 봐.");
+    } else {
+      const envy = /부럽다$/.test(q3.text), what = q3.text.replace(/ 모습이 유독 (거슬린다|부럽다)$/, " 모습");
+      if (envy){
+        lines.push(`다른 사람의 '${what}'이 유독 부러웠구나.`,
+          "그건 네 안에 아직 꺼내지 못한 힘이 있다는 신호일지도 몰라. 그림자엔 어두운 것만 있는 게 아니야. 융은 이걸 '황금 그림자'라고 불렀어.");
+      } else {
+        lines.push(`다른 사람의 '${what}'이 유독 거슬렸구나.`,
+          "남에게서 유독 눈에 걸리는 모습은, 사실 내 안에도 조금은 있는 경우가 많아. 융은 이걸 '투사'라고 불렀어. 내가 인정하지 못한 내 모습을, 남에게서 먼저 보게 되는 거지.");
+      }
+    }
+    lines.push(`네가 마주하기 싫다던 '${me}'도, 미워해야 할 적이 아니라 오래 혼자 숨어 있던 너의 한 조각이야.`,
+      "숨긴다고 사라지지 않아. 대신 알아봐 주면, 조금씩 힘이 빠져.",
+      "오늘 날 돌아봐 줘서, 고마워.");
+    return lines;
   }
 
   // the conversation is over: the guide responds and the door to the next layer appears
