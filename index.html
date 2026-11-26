@@ -1680,7 +1680,7 @@
   <button class="sound-btn" id="soundBtn" aria-pressed="false">🔈 소리 켜기</button>
 
 <script src="lib/three.min.js"></script>
-<script src="lib/forest3d.js?v=202611261827"></script>
+<script src="lib/forest3d.js?v=202611261840"></script>
 <script>
 (function(){
   /* ---------------- data ---------------- */
@@ -3932,6 +3932,16 @@
     btnV.classList.remove("near"); btnV.setAttribute("aria-pressed", "false");
     if (doorWashEl && doorWashEl.classList.contains("show")) setTimeout(hideDoorWash, prefersReducedMotion() ? 300 : 1300);
     if (isSelf){ const sc = () => scene; setTimeout(() => { if (sc() && sc().isSelf && !sc().lookedBack) showEdgeHint("숲 끝에 바다가 열렸어요. 잠깐, 뒤를 돌아봐도 좋아요", 3800); }, 2800); }
+    // the very first wood: a moment of "where am I?", then a nudge to start walking
+    if (layer.key === "persona"){
+      const first = scene => scene && scene.layer.key === "persona" && !scene.answered && !anyOverlayOpen();
+      const lines = [
+        ["(…여긴 어디지?)", 3000, 1800],
+        ["여기는 마음의 숲이에요. 저 앞으로 길이 이어져 있어요.", 3200, 5000],
+        [IS_TOUCH ? "아래 ⬆ 버튼을 꾹 눌러 걸어 보세요!" : "방향키(↑ ← →)나 W·A·D로 걸어 보세요!", 4500, 8400]
+      ];
+      lines.forEach(([text, ms, at]) => setTimeout(() => { if (first(scene)) showEdgeHint(text, ms); }, at));
+    }
     scene = {
       idx, layer, isSelf, objects, npcZ, npcObj: npcRef,
       obs: extras.obs, pool: layer.moonPool ? {} : null,
@@ -3999,7 +4009,7 @@
   function snakeStrike(o){
     const sc = scene;
     Forest3D.world.lunge();
-    Sound.blip();
+    Sound.yelp();
     const el = document.createElement("div");
     el.className = "shout-bubble"; el.setAttribute("role", "status"); el.textContent = "조심해!";
     sceneViewportEl.appendChild(el);
@@ -5852,7 +5862,7 @@
       e.preventDefault();
       if (e.repeat) return;
       const near = !scene.isSelf && !scene.answered && npcGap() < TALK_DIST;
-      if (near) tryTalk(); else if (!scene.ending && Forest3D.world) Forest3D.world.jump();
+      if (near) tryTalk(); else if (!scene.ending && Forest3D.world && Forest3D.world.jump()) Sound.boing();
       return;
     }
     if ((e.code === "Space" || e.key === "Enter") && !onButton){ tryTalk(); e.preventDefault(); }
@@ -5899,7 +5909,7 @@
   bindHold(btnLookL, () => keys.lookL = true, () => keys.lookL = false);
   bindHold(btnLookR, () => keys.lookR = true, () => keys.lookR = false);
   btnTalk.addEventListener("click", tryTalk);
-  document.getElementById("btnJump").addEventListener("pointerdown", e => { e.preventDefault(); if (USE3D && scene && !scene.ending && !anyOverlayOpen() && Forest3D.world) Forest3D.world.jump(); });
+  document.getElementById("btnJump").addEventListener("pointerdown", e => { e.preventDefault(); if (USE3D && scene && !scene.ending && !anyOverlayOpen() && Forest3D.world && Forest3D.world.jump()) Sound.boing(); });
   document.getElementById("btnView").addEventListener("click", e => { e.currentTarget.blur(); if (!anyOverlayOpen()) toggleSelfView(); });
   backToMapBtn.addEventListener("click", requestLeaveScene);
 
@@ -6199,6 +6209,20 @@
       chime(){ if (!enabled || !ctx) return; const t = ctx.currentTime; [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => tone(f, t + i * 0.14, 2.4, 0.05, "sine", 0.9)); },
       blip(){ if (!enabled || !ctx) return; const t = ctx.currentTime; tone(880, t, 0.6, 0.03, "sine", 0.8); tone(1318.5, t + 0.09, 0.8, 0.022, "sine", 0.8); },
       swell(){ if (!enabled || !ctx) return; const t = ctx.currentTime; [261.63, 329.63, 392, 523.25].forEach((f, i) => tone(f, t + i * 0.05, 3.2, 0.04, "triangle", 0.9)); },
+      // a jump: a springy "boing" — up, then a little wobble on the way down
+      boing(){ if (!enabled || !ctx) return; const t = ctx.currentTime;
+        const o = ctx.createOscillator(); o.type = "triangle";
+        o.frequency.setValueAtTime(260, t); o.frequency.exponentialRampToValueAtTime(720, t + 0.09); o.frequency.exponentialRampToValueAtTime(380, t + 0.32);
+        const lfo = ctx.createOscillator(); lfo.frequency.value = 18; const lg = ctx.createGain(); lg.gain.setValueAtTime(0, t); lg.gain.linearRampToValueAtTime(40, t + 0.12); lfo.connect(lg); lg.connect(o.frequency);
+        const g = ctx.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(0.1, t + 0.015); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.38);
+        o.connect(g); route(g, 0.9, 0.15); o.start(t); lfo.start(t); o.stop(t + 0.42); lfo.stop(t + 0.42); },
+      // a startled little "악!": a voiced burst with two formants, pitch jumping up and falling away
+      yelp(){ if (!enabled || !ctx) return; const t = ctx.currentTime;
+        const o = ctx.createOscillator(); o.type = "sawtooth";
+        o.frequency.setValueAtTime(380, t); o.frequency.exponentialRampToValueAtTime(620, t + 0.05); o.frequency.exponentialRampToValueAtTime(300, t + 0.28);
+        const g = ctx.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(0.17, t + 0.02); g.gain.setValueAtTime(0.17, t + 0.12); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.3);
+        [[850, 6, 1], [1250, 8, 0.7], [2600, 10, 0.25]].forEach(([f, q, a]) => { const bp = ctx.createBiquadFilter(); bp.type = "bandpass"; bp.frequency.value = f; bp.Q.value = q; const ag = ctx.createGain(); ag.gain.value = a; o.connect(bp); bp.connect(ag); ag.connect(g); });
+        route(g, 0.85, 0.25); o.start(t); o.stop(t + 0.32); },
       gather(){ if (!enabled || !ctx) return; const t = ctx.currentTime; [392, 493.88, 587.33, 739.99, 987.77, 1174.66].forEach((f, i) => tone(f, t + i * 0.2, 3, 0.04, "sine", 0.95)); }
     };
   })();
