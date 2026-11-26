@@ -5267,12 +5267,7 @@
         const portrait = card.querySelector(".npc-portrait");
         if (portrait) setTimeout(() => portrait.classList.toggle("pleased", selected.size > 0), 0);
         if (isSelected) selected.add(i); else selected.delete(i);
-        if (USE3D && isSelected && layer.key === "persona" && !scene.unmasked){
-          scene.unmasked = true;
-          Forest3D.world.liftMask();
-          Sound.chime();
-          showEdgeHint("가면 아래, 맑은 눈이 당신을 바라봐요", 2800);
-        }
+        // (the persona guide keeps its mask on until the whole conversation is over: see revealGuide)
         if (opt.custom && customInput){
           customInput.hidden = !isSelected;
           if (isSelected) customInput.focus();
