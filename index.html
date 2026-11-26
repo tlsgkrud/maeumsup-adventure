@@ -364,8 +364,10 @@
   .overlay.chat .card-scroll > *{ animation: none; }
   .overlay.chat .badge{ position: absolute; top: -0.95rem; left: 1.8rem; margin: 0; background: #e8a04a; color: #fff; border: none; letter-spacing: 0;
     font-family: "Jua", sans-serif; font-size: 1rem; padding: 0.32rem 1.1rem; transform: rotate(-3deg); box-shadow: 0 3px 0 rgba(150,90,20,0.3); }
-  .overlay.chat .dialogue-tools{ position: absolute; top: 0.7rem; right: 1.3rem; }
-  .overlay.chat .dialogue-tools .info-btn, .overlay.chat .pause-btn{ color: #9a7a5a; border-color: rgba(150,110,60,0.35); background: rgba(150,110,60,0.06); }
+  /* ⓘ and 잠시 멈추기 sit on the bubble's top edge, like the name tag, so they never cover the line */
+  .overlay.chat .dialogue-tools{ position: absolute; top: -0.85rem; right: 1.4rem; display: flex; gap: 0.35rem; }
+  .overlay.chat .dialogue-tools .info-btn, .overlay.chat .pause-btn{ color: #8a6a4a; border: 1px solid rgba(150,110,60,0.35); background: #fdf6e3;
+    box-shadow: 0 2px 6px rgba(40,25,5,0.18); }
   .overlay.chat .question{ color: #6b4a2a; font-size: clamp(1.1rem, 2.7vw, 1.38rem); line-height: 1.6; margin: 0.35rem 0 0.2rem; min-height: 2.2em; }
   .overlay.chat .desc, .overlay.chat .greet-line{ color: #7a5a3a; }
   .overlay.chat .multi-note{ color: #a3825e; margin: 0.4rem 0 0; }
@@ -397,7 +399,6 @@
     .overlay.chat .card{ width: calc(100% - 1.2rem); }
     .overlay.chat .card-scroll{ padding: 1.5rem 1.1rem 1.1rem; min-height: 6.5rem; }
     .overlay.chat .question{ font-size: 1.04rem; line-height: 1.5; margin-right: 0.2rem; }
-    .overlay.chat .dialogue-body[data-chat] .question{ padding-top: 0.35rem; }
     .overlay.chat .multi-note{ font-size: 0.8rem; margin-top: 0.15rem; }
     .overlay.chat .options{ position: static; width: auto; right: auto; bottom: auto; margin-top: 0.6rem;
       max-height: min(33vh, 19rem); max-height: min(33dvh, 19rem); padding: 0.15rem 0.1rem 0; gap: 0.38rem; transform: none; }
@@ -407,7 +408,7 @@
     .overlay.chat .opt-pager{ box-shadow: none; background: none; padding: 0 0.3rem; font-size: 0.82rem; }
     .overlay.chat .options .primary-btn{ position: sticky; bottom: 0; z-index: 1; margin-top: 0.2rem; box-shadow: 0 -8px 10px #fdf6e3, 0 4px 0 rgba(150,90,20,0.35); }
     .overlay.chat .custom-emotion-input{ font-size: 16px; }   /* 16px+ so iPhone doesn't zoom in on focus */
-    .overlay.chat .dialogue-tools{ top: 0.55rem; right: 0.9rem; }
+    .overlay.chat .dialogue-tools{ top: -0.8rem; right: 0.9rem; }
     .overlay.chat .pause-btn{ font-size: 0.75rem; padding: 0.2rem 0.55rem; }
   }
   /* phones held sideways (short screens): bubble on the left, answers in a tall column on the right */
@@ -420,7 +421,6 @@
     .overlay.chat .options button{ font-size: 0.86rem; padding: 0.42rem 0.8rem 0.42rem 1.7rem; }
     .overlay.chat .options .primary-btn{ position: sticky; bottom: 0; z-index: 1; box-shadow: 0 -8px 10px rgba(253,246,227,0.95), 0 4px 0 rgba(150,90,20,0.35); }
     .overlay.chat .opt-pager{ padding: 0 0.6rem; font-size: 0.82rem; }
-    .overlay.chat .dialogue-body[data-chat] .question{ margin-top: 1.5rem; }   /* below the ⓘ / 잠시 멈추기 buttons */
   }
   /* on phones, upright or sideways: the pager on one tidy line, and a pinned "다음" that is solid even
      while it is still greyed out (otherwise the answers show through it) */
