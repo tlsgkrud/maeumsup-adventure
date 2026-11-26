@@ -1680,7 +1680,7 @@
   <button class="sound-btn" id="soundBtn" aria-pressed="false">🔈 소리 켜기</button>
 
 <script src="lib/three.min.js"></script>
-<script src="lib/forest3d.js?v=202611261028"></script>
+<script src="lib/forest3d.js?v=202611261032"></script>
 <script>
 (function(){
   /* ---------------- data ---------------- */
@@ -4158,7 +4158,7 @@
     if (overlay.classList.contains("open") || infoOverlay.classList.contains("open") || (scene.ending && !scene.pierWalk)){
       if (talkPrompt.classList.contains("show")){ talkPrompt.classList.remove("show"); scene.talkReady = null; }
       Forest3D.frame(now, dt, { frozen: true, npcU: scene.npcZ != null ? scene.npcZ / K3 : null, hideGuide: false,
-        talk: overlay.classList.contains("open") && overlay.classList.contains("dialogue-mode") && !scene.isSelf });
+        talk: overlay.classList.contains("open") && overlay.classList.contains("dialogue-mode") && (!scene.isSelf || !!scene.selfTalking) });
       syncAnchors3D();
       return;
     }
