@@ -1680,7 +1680,7 @@
   <button class="sound-btn" id="soundBtn" aria-pressed="false">🔈 소리 켜기</button>
 
 <script src="lib/three.min.js"></script>
-<script src="lib/forest3d.js?v=202611261757"></script>
+<script src="lib/forest3d.js?v=202611261827"></script>
 <script>
 (function(){
   /* ---------------- data ---------------- */
@@ -5931,9 +5931,9 @@
     const MOODS = {
       map:     { root: 293.66, bpm: 72, mode: "major", prog: [[0, 4, 7, 11], [5, 9, 12, 16], [-3, 0, 4, 7], [-5, -1, 2, 7]],
                  accomp: "none", lead: "musicbox", leadOct: 1, themeEvery: 2, pad: 0.5, cut: 1500, wind: 0.006 },
-      // the first wood: bright and bouncy — marimba arpeggios, a little shaker, the theme on glockenspiel, birds
-      persona: { root: 261.63, bpm: 112, mode: "major", prog: [[0, 4, 7], [-3, 0, 4], [5, 9, 12], [7, 11, 14]],
-                 accomp: "marimba", tick: true, lead: "glock", leadOct: 1, themeEvery: 2, pad: 0.3, cut: 2200, birds: true, wind: 0.008 },
+      // the first wood: light and friendly but calm — a soft marimba on the beat, the theme on a music box, a few birds
+      persona: { root: 261.63, bpm: 88, mode: "major", prog: [[0, 4, 7], [-3, 0, 4], [5, 9, 12], [7, 11, 14]],
+                 accomp: "marimba", sparse: true, lead: "musicbox", leadOct: 1, themeEvery: 2, pad: 0.38, cut: 1900, birds: 0.01, wind: 0.008 },
       // sunset: warm and unhurried — plucked arpeggios, the theme on a soft flute
       ego:     { root: 174.61, bpm: 84, mode: "major", prog: [[0, 4, 7, 11], [-3, 0, 4, 7], [-7, -3, 0, 4], [-5, -1, 2, 7]],
                  accomp: "pluck", lead: "flute", leadOct: 1, themeEvery: 2, pad: 0.4, cut: 1800, wind: 0.009 },
@@ -6067,7 +6067,7 @@
           voices.forEach((pair, i) => pair.forEach(o => o.frequency.setTargetAtTime(hz(R, chord[i % n]), t, 0.35)));
           padFilt.frequency.setTargetAtTime(c.cut, t, 1.5);
         }
-        if (c.accomp === "marimba") play.marimba(hz(R, chord[[0, 1, 2, 1][pos % 4] % n] + 12), t, pos % 2 ? 0.026 : 0.036);
+        if (c.accomp === "marimba" && (!c.sparse || pos % 2 === 0)) play.marimba(hz(R, chord[[0, 1, 2, 1][(c.sparse ? pos / 2 : pos) % 4] % n] + 12), t, c.sparse ? 0.026 : (pos % 2 ? 0.026 : 0.036));
         if (c.tick && pos % 2) tick(t);
         if (c.accomp === "pluck" && pos % 2 === 0) play.pluck(hz(R, chord[(pos / 2) % n] + (pos === 0 ? 0 : 12)), t, 0.052);
         if (c.accomp === "heart" && (pos === 0 || pos === 4)) heart(t);
@@ -6084,7 +6084,7 @@
           });
         }
         if (c.sparkle && Math.random() < 0.12) play.glock(hz(R, chord[Math.floor(Math.random() * n)] + 24), t, 0.016);
-        if (c.birds && Math.random() < 0.025) bird(t);
+        if (c.birds && Math.random() < (typeof c.birds === "number" ? c.birds : 0.025)) bird(t);
       };
       const pump = () => {
         if (!enabled) return;
