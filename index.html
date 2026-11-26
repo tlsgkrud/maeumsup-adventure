@@ -390,9 +390,44 @@
   .overlay.chat .options .primary-btn{ background: #e8a04a; color: #fff; border-radius: 999px; padding: 0.62rem 1rem; text-align: center !important; justify-content: center; box-shadow: 0 4px 0 rgba(150,90,20,0.35); }
   .overlay.chat .options .primary-btn::before, .overlay.chat .options .primary-btn::after{ content: none; }
   .overlay.chat .custom-emotion-input{ background: #fffaf0; color: #5a3e22; border-radius: 999px; border: 2px solid #f0c27a; }
-  @media (max-width: 480px){
-    .overlay.chat .card-scroll{ padding: 1.6rem 1.3rem 1.9rem; }
-    .overlay.chat .options{ right: 1rem; bottom: 11.5rem; width: calc(100vw - 2rem); max-height: calc(100dvh - 18rem); }
+  /* phones, upright: the answers move inside the speech bubble, under the question — a short list
+     that scrolls within the lower part of the screen (the guide stays in view above), with "다음"
+     pinned to the bottom of the list so it can never be pushed out of sight */
+  @media (max-width: 600px){
+    .overlay.chat .card{ width: calc(100% - 1.2rem); }
+    .overlay.chat .card-scroll{ padding: 1.5rem 1.1rem 1.1rem; min-height: 6.5rem; }
+    .overlay.chat .question{ font-size: 1.04rem; line-height: 1.5; margin-right: 0.2rem; }
+    .overlay.chat .dialogue-body[data-chat] .question{ padding-top: 0.35rem; }
+    .overlay.chat .multi-note{ font-size: 0.8rem; margin-top: 0.15rem; }
+    .overlay.chat .options{ position: static; width: auto; right: auto; bottom: auto; margin-top: 0.6rem;
+      max-height: min(33vh, 19rem); max-height: min(33dvh, 19rem); padding: 0.15rem 0.1rem 0; gap: 0.38rem; transform: none; }
+    .overlay.chat .options button{ font-size: 0.9rem; line-height: 1.35; padding: 0.5rem 0.9rem 0.5rem 1.75rem; background: #fff9ec;
+      box-shadow: 0 1px 0 rgba(150,110,60,0.25), 0 0 0 1px rgba(150,110,60,0.18) inset; }
+    .overlay.chat .options button.selected{ background: #ffdca0; }
+    .overlay.chat .opt-pager{ box-shadow: none; background: none; padding: 0 0.3rem; font-size: 0.82rem; }
+    .overlay.chat .options .primary-btn{ position: sticky; bottom: 0; z-index: 1; margin-top: 0.2rem; box-shadow: 0 -8px 10px #fdf6e3, 0 4px 0 rgba(150,90,20,0.35); }
+    .overlay.chat .custom-emotion-input{ font-size: 16px; }   /* 16px+ so iPhone doesn't zoom in on focus */
+    .overlay.chat .dialogue-tools{ top: 0.55rem; right: 0.9rem; }
+    .overlay.chat .pause-btn{ font-size: 0.75rem; padding: 0.2rem 0.55rem; }
+  }
+  /* phones held sideways (short screens): bubble on the left, answers in a tall column on the right */
+  @media (max-height: 520px) and (min-width: 601px){
+    body.scene3d .overlay.chat{ padding-bottom: max(0.6rem, env(safe-area-inset-bottom)); justify-content: flex-start; }
+    .overlay.chat .card{ width: 54%; max-width: 54%; margin-left: max(0.8rem, env(safe-area-inset-left)); }
+    .overlay.chat .card-scroll{ padding: 1.3rem 1.3rem 1.2rem; min-height: 5rem; }
+    .overlay.chat .question{ font-size: 1rem; line-height: 1.45; }
+    .overlay.chat .options{ top: 0.7rem; bottom: 0.7rem; right: max(0.8rem, env(safe-area-inset-right)); width: 40%; max-height: none; gap: 0.35rem; }
+    .overlay.chat .options button{ font-size: 0.86rem; padding: 0.42rem 0.8rem 0.42rem 1.7rem; }
+    .overlay.chat .options .primary-btn{ position: sticky; bottom: 0; z-index: 1; box-shadow: 0 -8px 10px rgba(253,246,227,0.95), 0 4px 0 rgba(150,90,20,0.35); }
+    .overlay.chat .opt-pager{ padding: 0 0.6rem; font-size: 0.82rem; }
+    .overlay.chat .dialogue-body[data-chat] .question{ margin-top: 1.5rem; }   /* below the ⓘ / 잠시 멈추기 buttons */
+  }
+  /* on phones, upright or sideways: the pager on one tidy line, and a pinned "다음" that is solid even
+     while it is still greyed out (otherwise the answers show through it) */
+  @media (max-width: 600px), (max-height: 520px){
+    .overlay.chat .opt-pager{ display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; white-space: nowrap; }
+    .overlay.chat .opt-pager .pg-num{ font-size: 0.78rem; }
+    .overlay.chat .options .primary-btn:disabled{ opacity: 1; background: #f1d4a6; color: #fffaf0; }
   }
   .admin-link{ opacity: 0.55; }
   .admin-pass{ display: flex; gap: 0.5rem; margin: 0.8rem 0 0.4rem; }
