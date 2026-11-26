@@ -1400,13 +1400,6 @@
   #wellFade{ position: fixed; inset: 0; z-index: 60; pointer-events: none; opacity: 0; transition: opacity 0.6s ease;
     background: radial-gradient(circle at 50% 45%, rgba(190,235,255,0.9) 0%, rgba(80,120,200,0.95) 35%, #1a1640 80%); }
   #wellFade.show{ opacity: 1; }
-  /* your own little speech bubble, over your head while you face the camera at the very start */
-  .say-bubble{ position: absolute; left: 50%; top: 38%; transform: translate(-50%, 10px) scale(0.7); opacity: 0; z-index: 30; pointer-events: none;
-    background: #fff8ec; color: #4a2c16; font-family: "Jua", sans-serif; font-size: clamp(1.05rem, 2.6vw, 1.35rem); white-space: nowrap;
-    padding: 0.5rem 1.1rem 0.55rem; border-radius: 22px; box-shadow: 0 6px 20px rgba(20,12,4,0.35);
-    transition: opacity 0.25s ease, transform 0.3s cubic-bezier(.3,1.5,.5,1); }
-  .say-bubble::after{ content: ""; position: absolute; left: 50%; bottom: -14px; margin-left: -10px; border: 10px solid transparent; border-top: 15px solid #fff8ec; border-bottom: 0; }
-  .say-bubble.show{ opacity: 1; transform: translate(-50%, 0) scale(1); }
   .toast{
     position: fixed; left: 50%; bottom: 24px; z-index: 20;
     transform: translate(-50%, 20px);
@@ -1687,7 +1680,7 @@
   <button class="sound-btn" id="soundBtn" aria-pressed="false">🔈 소리 켜기</button>
 
 <script src="lib/three.min.js"></script>
-<script src="lib/forest3d.js?v=202611261853"></script>
+<script src="lib/forest3d.js?v=202611261855"></script>
 <script>
 (function(){
   /* ---------------- data ---------------- */
@@ -3930,8 +3923,6 @@
     document.getElementById("sceneHint").textContent = IS_TOUCH ? "" : "W/↑ 걷기 · A/D 방향 · 드래그 둘러보기 · Space 점프·대화 · V 내 모습";
     const oldEnding = sceneViewportEl.querySelector(".self-ending");
     if (oldEnding) oldEnding.remove();
-    const oldSay = sceneViewportEl.querySelector(".say-bubble");
-    if (oldSay) oldSay.remove();
     sceneView.classList.remove("ending");
     introSubtitle.textContent = "";
     talkPrompt.classList.remove("show");
@@ -3942,21 +3933,16 @@
     if (doorWashEl && doorWashEl.classList.contains("show")) setTimeout(hideDoorWash, prefersReducedMotion() ? 300 : 1300);
     if (isSelf){ const sc = () => scene; setTimeout(() => { if (sc() && sc().isSelf && !sc().lookedBack) showEdgeHint("숲 끝에 바다가 열렸어요. 잠깐, 뒤를 돌아봐도 좋아요", 3800); }, 2800); }
     // the very first wood: you see your own face first, wondering where you are; then a nudge to walk.
-    // The moment you walk, the bubble goes and the view swings round behind you.
+    // The moment you walk, the prompt goes and the view swings round behind you.
     if (layer.key === "persona"){
       world.faceCamera();
       const btnV0 = document.getElementById("btnView"); btnV0.classList.add("near"); btnV0.setAttribute("aria-pressed", "true");
       const first = sc => sc && sc.layer.key === "persona" && !sc.answered && !sc.introWalked && !anyOverlayOpen();
-      const say = (text, ms) => {
-        const sc = scene; if (!first(sc)) return;
-        let el = sceneViewportEl.querySelector(".say-bubble");
-        if (!el){ el = document.createElement("div"); el.className = "say-bubble"; el.setAttribute("role", "status"); sceneViewportEl.appendChild(el); }
-        el.textContent = text; void el.offsetWidth; el.classList.add("show");
-        clearTimeout(say._t); say._t = setTimeout(() => el.classList.remove("show"), ms);
-      };
-      setTimeout(() => say("(…여긴 어디지?)", 2800), 1500);
-      setTimeout(() => { if (first(scene)) showEdgeHint("여기는 마음의 숲이에요. 저 앞으로 길이 이어져 있어요.", 3400); }, 4600);
-      setTimeout(() => say(IS_TOUCH ? "⬆ 버튼을 꾹 눌러 봐!" : "앞으로 걸어가 볼까? (↑ 또는 W)", 60000), 8200);
+      // the lines show in the usual guide strip at the top; the last one stays until you start walking
+      const hint = (text, ms) => { if (first(scene)) showEdgeHint(text, ms); };
+      setTimeout(() => hint("(…여긴 어디지?)", 3000), 1500);
+      setTimeout(() => hint("여기는 마음의 숲이에요. 저 앞으로 길이 이어져 있어요.", 3400), 4800);
+      setTimeout(() => { if (first(scene)){ scene.walkPrompt = true; hint(IS_TOUCH ? "아래 ⬆ 버튼을 꾹 눌러 걸어 보세요!" : "방향키(↑ ← →)나 W·A·D로 걸어 보세요!", 60000); } }, 8500);
     }
     scene = {
       idx, layer, isSelf, objects, npcZ, npcObj: npcRef,
@@ -4208,7 +4194,7 @@
     scene.traveled = r.u * K3;
     if (!scene.introWalked && (keys.forward || keys.back)){
       scene.introWalked = true;
-      const sb = sceneViewportEl.querySelector(".say-bubble"); if (sb){ sb.classList.remove("show"); setTimeout(() => sb.remove(), 400); }
+      if (scene.walkPrompt) edgeHint.classList.remove("show");
     }
     if (r.egg === "anima" && !scene.answered) showEdgeHint("이 우물은 뭘까요? 신비로운 빛이 나요… 한번 들어가 볼까요?", 5000);
     if (r.plunge && !scene.answered) wellPlunge();
