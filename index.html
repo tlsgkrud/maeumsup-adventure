@@ -1680,7 +1680,7 @@
   <button class="sound-btn" id="soundBtn" aria-pressed="false">🔈 소리 켜기</button>
 
 <script src="lib/three.min.js"></script>
-<script src="lib/forest3d.js?v=202611261855"></script>
+<script src="lib/forest3d.js?v=202611261904"></script>
 <script>
 (function(){
   /* ---------------- data ---------------- */
@@ -4194,7 +4194,12 @@
     scene.traveled = r.u * K3;
     if (!scene.introWalked && (keys.forward || keys.back)){
       scene.introWalked = true;
-      if (scene.walkPrompt) edgeHint.classList.remove("show");
+      if (scene.walkPrompt){
+        edgeHint.classList.remove("show");
+        // once you're walking: try a jump
+        const sc = scene;
+        setTimeout(() => { if (scene === sc && !sc.answered && !sc.jumped && !anyOverlayOpen()){ sc.jumpPrompt = true; showEdgeHint(IS_TOUCH ? "⤴ 버튼을 눌러 점프해 보세요!" : "Space를 눌러 점프해 보세요!", 5000); } }, 2500);
+      }
     }
     if (r.egg === "anima" && !scene.answered) showEdgeHint("이 우물은 뭘까요? 신비로운 빛이 나요… 한번 들어가 볼까요?", 5000);
     if (r.plunge && !scene.answered) wellPlunge();
@@ -5868,7 +5873,7 @@
       e.preventDefault();
       if (e.repeat) return;
       const near = !scene.isSelf && !scene.answered && npcGap() < TALK_DIST;
-      if (near) tryTalk(); else if (!scene.ending && Forest3D.world && Forest3D.world.jump()) Sound.boing();
+      if (near) tryTalk(); else if (!scene.ending && Forest3D.world && Forest3D.world.jump()) jumped();
       return;
     }
     if ((e.code === "Space" || e.key === "Enter") && !onButton){ tryTalk(); e.preventDefault(); }
@@ -5915,7 +5920,9 @@
   bindHold(btnLookL, () => keys.lookL = true, () => keys.lookL = false);
   bindHold(btnLookR, () => keys.lookR = true, () => keys.lookR = false);
   btnTalk.addEventListener("click", tryTalk);
-  document.getElementById("btnJump").addEventListener("pointerdown", e => { e.preventDefault(); if (USE3D && scene && !scene.ending && !anyOverlayOpen() && Forest3D.world && Forest3D.world.jump()) Sound.boing(); });
+  // a jump: the boing, and the "try a jump" prompt goes once you've done it
+  function jumped(){ Sound.boing(); if (scene){ scene.jumped = true; if (scene.jumpPrompt){ scene.jumpPrompt = false; edgeHint.classList.remove("show"); } } }
+  document.getElementById("btnJump").addEventListener("pointerdown", e => { e.preventDefault(); if (USE3D && scene && !scene.ending && !anyOverlayOpen() && Forest3D.world && Forest3D.world.jump()) jumped(); });
   document.getElementById("btnView").addEventListener("click", e => { e.currentTarget.blur(); if (!anyOverlayOpen()) toggleSelfView(); });
   backToMapBtn.addEventListener("click", requestLeaveScene);
 
