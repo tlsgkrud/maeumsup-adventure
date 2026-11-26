@@ -4854,6 +4854,13 @@
       const r = personaReading();
       delete state.mask;
       save();
+      // the mask comes off once you have named it and the feeling behind it; the reading follows face to face
+      if (USE3D && !scene.unmasked){
+        scene.unmasked = true;
+        Forest3D.world.liftMask();
+        Sound.chime();
+        showEdgeHint("가면 아래, 맑은 눈이 당신을 바라봐요", 2800);
+      }
       speakLines(layer, [`네가 고른 건 ‘${r.name}’이구나.`, r.seen, r.intent, r.flex], () => finishDialogue(layer), "계속 걷기");
     } else if (layer.key === "ego" && USE3D && Forest3D.world && Forest3D.world.FORK){
       openForkAsk(layer);
@@ -4876,8 +4883,6 @@
       const behindDoor = USE3D && scene.obs && scene.obs.type === "behind";
       // at the ego's fork the door waits at the end of whichever way you take (showForkDoor)
       if (USE3D && scene.fork && Forest3D.world.FORK){ Forest3D.world.S.answered = true; Sound.chime(); return; }
-      // after the persona guide takes its mask off, a few quiet seconds to see its face before the
-      // door rises (you can't walk on until then: with no door yet, the way ahead stays closed)
       const sc0 = scene;
       const placeDoor = () => {
       if (scene !== sc0) return;
@@ -4899,8 +4904,7 @@
         ? "이 문 너머는 개인의 기억을 넘어선, 모두가 함께 지닌 마음의 층(집단무의식)이에요"
         : "당신의 표식이 문의 열쇠가 됩니다 — 걸어 들어가 보세요", 3200);
       // after the persona guide lifts its mask, let that moment's line be read first
-      if (layer.key === "persona" && USE3D){ const sc = scene; setTimeout(() => { if (scene === sc) doorHint(); }, 1200); }
-      else if (layer.key === "persona" || layer.key === "shadow"){ const sc = scene; setTimeout(() => { if (scene === sc) doorHint(); }, 2700); }
+      if (layer.key === "persona" || layer.key === "shadow"){ const sc = scene; setTimeout(() => { if (scene === sc) doorHint(); }, 2700); }
       else if (layer.key === "anima" && scene.pool){
         // the reflection and the bridge come first; then where the bridge leads
         const sc = scene;
@@ -4908,8 +4912,7 @@
       }
       else doorHint();
       };
-      if (layer.key === "persona" && USE3D) setTimeout(placeDoor, prefersReducedMotion() ? 1200 : 3200);
-      else placeDoor();
+      placeDoor();
     }
   }
 
@@ -5350,7 +5353,7 @@
     el.classList.add("pleased");
     if (key === "persona"){
       el.classList.add("unmasked");
-      if (USE3D) Forest3D.world.liftMask();
+      if (USE3D && !scene.unmasked) Forest3D.world.liftMask();
       const sp = document.createElement("div");
       sp.className = "unmask-sparkle";
       el.appendChild(sp);
